@@ -106,9 +106,10 @@ sat = 0;
 sun = 0;
 count = 0;
 week = 1;
+daycount = 1;
 weekarray(week,:)= week;
 sz=zeros(52,5);
-
+% dailyuse= zeros(365,1);
 for n=1:rowsDataMat
     if  rem((n+6)/7,1) == 0 % Finds Sundays
         sun=sun+1;
@@ -118,6 +119,9 @@ for n=1:rowsDataMat
         count = count+ 1;
         if  count < 6
             sz(week,count)=sum(DataMat(n,:));
+            dailyuse(daycount,1)=sum(DataMat(n,:));
+            dc(daycount,1)=daycount;
+            daycount= daycount+1;
             if count == 5
             sz(week,6)= mean(sz(week,:));
             end
@@ -126,8 +130,10 @@ for n=1:rowsDataMat
             weekarray(week,:)= week;
             count = 1;
             sz(week,count)=sum(DataMat(n,:));
+            dailyuse(daycount,1)=sum(DataMat(n,:));
+            dc(daycount,1)=daycount;
+            daycount= daycount+1;
         end
-
     end
 end
 figure(plsct+1);
@@ -136,5 +142,13 @@ title('Mean Weekly Power Usage Across Senate House')
 xlabel('Week')
 ylabel('Mean Weekly Power Useage /KwH')
 xlim([1,52])
+
+dc365= dc../5
+figure(plsct+2);
+plot(dc, dailyuse)
+title('Mean Daily Power Usage Across Senate House')
+xlabel('Day')
+ylabel('Mean Daily Power Useage /KwH')
+xlim([1,260])
 
 
