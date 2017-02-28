@@ -191,10 +191,8 @@ batteryuse = zeros(rowsDataMat,colsDataMat);
 for n=1:rowsDataMat
 for c = 1:48
     if 17 <= Time(1,c) && Time(1,c) <= 19.5
-        batteryuse(n,c)=DataMat(n,c);
-        batcapacity(n,1)=sum(batteryuse(n,c));
+        batteryuse(n,c)=DataMat(
     else
-        batteryuse(n,c)=0;
     end
 end
 end
