@@ -108,6 +108,7 @@ for n=1:rowsDataMat
 end
 
 saving= sum(battotuse*(rateR-rateG))/100;
+sumbatuse = sum(sum(battotuse));
 maxcapacity = max(battotuse);
 batcapacity = maxcapacity*1.1; %kWh
 batcost = kwhcost*batcapacity;
@@ -121,7 +122,9 @@ title('Payback Period for Battery Based on Cost pkWh')
 xlabel('Payback Time / Years')
 ylabel('Cost pkWh / £pkWh')
 
+% Powerwall Calculation
 
+cycles= 5000;
 
 
 
