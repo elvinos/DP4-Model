@@ -202,13 +202,10 @@ for plsct=2:2
     title({'Normal Usage Against Best Fit Battery: ',string(Data(plsct+1,1))})
     xlabel('Time Of Day')
     figure(3)
-    ha = area([17.5 19.5], [maxData1 maxData1], 'FaceColor', [.7 .7 .7],'LineStyle','none');
-hold on
-    yyaxis left
+    yya
     plot(Time, DataMat(plsct,:))
     hold on
     plot(Time, dataMatBat(plsct,:))
-    yyaxis right
     plot(Time, batcharge(plsct,:))
     
 end

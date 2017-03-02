@@ -105,7 +105,7 @@ Yearcharge = sum(Daycharge);
 
 
 %% Do Some Plotting
-for plsct=2:6
+for plsct=2:2
     figure(plsct)
     maxData1= max(DataMat(plsct,:)+1);
 yyaxis left
