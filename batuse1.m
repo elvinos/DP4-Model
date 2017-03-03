@@ -115,8 +115,7 @@ for n=1:rowsDataMat
                  if batcap < curCap && curCap-batcap < timetoCharge 
                     dataMatBat(n,c)=dataMatBat(n,c)+ curCap-batcap;
                     batcap = curCap;
-                    
-                    
+                   
                 elseif batcap < curCap
                     dataMatBat(n,c)=dataMatBat(n,c)+ timetoCharge;
                     batcap = batcap + timetoCharge;
@@ -212,5 +211,3 @@ hold on
     plot(Time, batcharge(plsct,:))
     
 end
-
-
