@@ -5,7 +5,7 @@ close all
 
 %% Variables
 plsct = 1; %Select the number of Plots to Create
-
+rnfit = 2; % Select the fit of Different kWh Samples
 %% Create Data
 
 fileName = 'senateEDD.csv';
@@ -17,47 +17,52 @@ DataMat = cell2mat(Data(2:rowsData,4:colsData));
 rowsDataMat = size(DataMat,1);
 colsDataMat = size(DataMat,2);
 
-for c = 0.5:0.5:24
-    cc= c*2;
-    TimeHH(:,cc)= c;
-end
-for mm = 0:1:1439
-    TimeMM(:,mm+1)= mm;
-end
-
-
 for n=1:rowsDataMat
 
     for c = 1:48
-        if c - 1 == 0
-            grad(n,c) = 1;
-        else
-        grad(n,c)=((DataMat(n,c))-(DataMat(n,c-1))/(30)); 
+        cc= c/2;
+        TimeHH(:,c)= cc;
+        cm = c*30;
+        if c == 1 %Create a flat gradient for the first 30 mins
+            grad(n,c) = ((DataMat(n,c)-DataMat(n,c))/(30));
+            const(n,c) = DataMat(n,c)-grad(n,c)*cm;
+        else %Use Gradient between points to create Minute by minute useage
+            grad(n,c)=((DataMat(n,c)-DataMat(n,c-1))/(30));
+            const(n,c)=DataMat(n,c)-grad(n,c)*cm;
         end
-        const(n,c)=DataMat(n,c)-grad(n,c)*(c-1)*30;
         for m = 1:30
-        mm = (c-1)*30 + m;
-        livedata(n,mm)=2*(DataMat(n,c)+randn/5);
-%         livedata(n,mm)=2*(DataMat(n,c));
-        DataMatmm(n,mm)=grad(n,c)*mm+const(n,c);
+            mm = (c-1)*30 + m;
+            TimeMM(:,mm)= mm;
+            DataMatmm(n,mm)=grad(n,c)*mm+const(n,c); % kWh Usage Per Half Hour with Minute by Minute Data Segments
+            DataMatmm30(n,mm)=DataMatmm(n,mm)/30; % kWh Useage Per Minute
+            % Use a Normally Distributed Random Number to show Change in
+            % Usegae Minute by Minute
+            livedata(n,mm)=2*(DataMatmm(n,mm)+randn/rnfit);
         end
-        livedataav(n,c)=mean(livedata(n,mm-29:mm));
+        livedataav(n,c)=mean(livedata(n,mm-29:mm)); % Method to Check the Fit of Code
     end
 end
 
-for m = 1:30
-      test(m)=livedata(1,m);
-end
-    
-   test = mean(test);
-   disp(DataMat(1,1));
-%     plot(TimeMM(1,:),livedata(1,:))
+% Create Plots
+  for plsct = 2:2
+    figure(plsct)
+    yyaxis left
+    plot(TimeMM(1,:),livedata(plsct,:))
+    ylabel('Demand/kW')
     hold on
-    plot(TimeMM(1,:),DataMatmm(1,:));
-%     ylim([8 38]);
+%     plot(TimeMM(1,:),DataMatmm(plsct,:));
     xlim([0 1440]);
-%     plot(TimeHH(1,:)*60,DataMat(1,:));
-%     plot(TimeHH(1,:)*60,livedataav(1,:));
-    datasum = sum(DataMat(1,:));
-    livesum = trapz(livedata(1,:))/60;
+    yyaxis right
+    ylabel('Useage/kWh')
+    plot(TimeMM(1,:),DataMatmm30(plsct,:));
+    title('Plot of Live Demand Fit With Minute By Minute Useage Fit')
+    xlabel('Time / Minutes')
+  end
+  
+  
+    % Validate Code 
+%     datasum = sum(DataMat(2,:));
+%     datammsum = sum(DataMatmm30(2,:));
+%     livesum = trapz(livedata(2,:))/60;
     
+

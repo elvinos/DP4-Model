@@ -42,7 +42,7 @@ for n=1:rowsDataMat
     for c = 1:48
         
     if  rem((n+6)/7,1) == 0  ||  rem((n)/7,1) == 0 % Finds Sundays
-        if 17 <= Time(1,c) && Time(1,c) <= 19.5
+        if 17 < Time(1,c) && Time(1,c) <= 19.5
             DUoSrate = rateA;
             Atot(n,c)= DataMat(n,c)*rateA;
         else
@@ -53,7 +53,7 @@ for n=1:rowsDataMat
         if  Time(1,c) <= 19 && Time(1,c) > 17
             DUoSrate = rateR;
             Rtot(n,c)= DataMat(n,c)*rateR;
-        elseif 8 <= Time(1,c) && Time(1,c) <= 17 || 19 < Time(1,c) && Time(1,c) <= 21.5
+        elseif 8 < Time(1,c) && Time(1,c) <= 17 || 19 < Time(1,c) && Time(1,c) <= 21.5
             DUoSrate = rateA;
             Atot(n,c)= DataMat(n,c)*rateA;
         else
@@ -103,10 +103,9 @@ for n=1:rowsDataMat
         wkday = wkday+1;
     end
     for c = 1:48
-        
         if  rem((n+6)/7,1) == 0  ||  rem((n)/7,1) == 0
             day = 'wkend';
-            if 17 <= Time(1,c) && Time(1,c) <= 19.5
+            if 17 < Time(1,c) && Time(1,c) <= 19.5
                  batteryuse(n,c)=0;
                  batcap=batcap;
             else
@@ -114,8 +113,7 @@ for n=1:rowsDataMat
                  %Battery Capacity Charge
                  if batcap < curCap && curCap-batcap < timetoCharge 
                     dataMatBat(n,c)=dataMatBat(n,c)+ curCap-batcap;
-                    batcap = curCap;
-                   
+                    batcap = curCap; 
                 elseif batcap < curCap
                     dataMatBat(n,c)=dataMatBat(n,c)+ timetoCharge;
                     batcap = batcap + timetoCharge;
@@ -128,7 +126,7 @@ for n=1:rowsDataMat
                 batteryuse(n,c)= DataMat(n,c);
                 batcap=batcap-DataMat(n,c); % Capacity of battery
                 wkbatuse(wkday,c)= DataMat(n,c); %Cal for Weekday Usage Matrix for Histogram 
-            elseif 8 <= Time(1,c) && Time(1,c) <= 17 || 19 < Time(1,c) && Time(1,c) <= 21.5
+            elseif 8 < Time(1,c) && Time(1,c) <= 17 || 19 < Time(1,c) && Time(1,c) <= 21.5
                 batteryuse(n,c)=0;
                 wkbatuse(wkday,c)= 0;
             else

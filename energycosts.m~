@@ -41,8 +41,8 @@ for n=1:rowsDataMat
 
     for c = 1:48
         
-    if  rem((n+6)/7,1) == 0  ||  rem((n)/7,1) == 0 % Finds Sundays + Saturdays
-        if 17 < Time(1,c) && Time(1,c) <= 19.5
+    if  rem((n+6)/7,1) == 0  ||  rem((n)/7,1) == 0 % Finds Sundays
+        if 17 <= Time(1,c) && Time(1,c) <= 19.5
             DUoSrate = rateA;
             Atot(n,c)= DataMat(n,c)*rateA;
         else
@@ -53,7 +53,7 @@ for n=1:rowsDataMat
         if  Time(1,c) <= 19 && Time(1,c) > 17
             DUoSrate = rateR;
             Rtot(n,c)= DataMat(n,c)*rateR;
-        elseif 8 < Time(1,c) && Time(1,c) <= 17 || 19 < Time(1,c) && Time(1,c) <= 21.5
+        elseif 8 <= Time(1,c) && Time(1,c) <= 17 || 19 < Time(1,c) && Time(1,c) <= 21.5
             DUoSrate = rateA;
             Atot(n,c)= DataMat(n,c)*rateA;
         else
@@ -67,14 +67,11 @@ for n=1:rowsDataMat
     end
     Daycharge(n,:)= sum(HHcharge(n,:))./100; %Daily Cost in Pounds
 end
-plot(Time(1,:),Rtot(2,:),'r--');
-hold on
-plot(Time(1,:),Atot(2,:),'y--');
-plot(Time(1,:),Gtot(2,:),'g--');
+
+chargeR/
 chargeR=sum(sum(Rtot))/100;
 chargeA=sum(sum(Atot))/100;
 chargeG=sum(sum(Gtot))/100;
-totunitDUoS=(chargeR/rateR+chargeA/rateA+chargeG/rateG)*100
 DUoSTot= sum(sum(DUoSCharge))/100;
 TotUnit= sum(sum(DataMat));
 Yearcharge = sum(Daycharge)
