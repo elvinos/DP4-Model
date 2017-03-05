@@ -31,7 +31,7 @@ function [livedata,DataMatmm30] = liveDatafunc(rnfit)
                 DataMatmm30(n,mm)=DataMatmm(n,mm)/29.995; % kWh Useage Per Minute 29.995 used to give better fit.
                 % Use a Normally Distributed Random Number to show Change in
                 % Usegae Minute by Minute
-                livedata(n,mm)=(DataMatmm(n,mm)+randn/rnfit)/29.995;
+                livedata(n,mm)=2*(DataMatmm3(n,mm)+randn/rnfit);
             end
             livedataav(n,c)=mean(livedata(n,mm-29:mm)); % Method to Check the Fit of Code
         end

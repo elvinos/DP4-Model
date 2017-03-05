@@ -70,7 +70,7 @@ disp(sum(sum(DataMatmm30))/sum(sum(DataMat))*100)
 %     xlabel('Time / Minutes')
 %   end
   
-    for plsct = 2:2
+    for plsct = 3:3
     figure(plsct)
     plot(TimeHH(1,:)*60,DataMat(plsct,:));
     xlim([0 1440]);
