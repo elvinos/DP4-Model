@@ -28,7 +28,7 @@ function [livedata,DataMatmm30] = liveDatafunc(rnfit)
                 mm = (c-1)*30 + m;
                 TimeMM(:,mm)= mm;
                 DataMatmm(n,mm)=grad(n,c)*mm+const(n,c); % kWh Usage Per Half Hour with Minute by Minute Data Segments
-                DataMatmm30(n,mm)=DataMatmm(n,mm)/30; % kWh Useage Per Minute
+                DataMatmm30(n,mm)=DataMatmm(n,mm)/29.995; % kWh Useage Per Minute 29.995 used to give better fit.
                 % Use a Normally Distributed Random Number to show Change in
                 % Usegae Minute by Minute
                 livedata(n,mm)=2*(DataMatmm(n,mm)+randn/rnfit);

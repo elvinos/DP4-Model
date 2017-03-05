@@ -74,8 +74,9 @@ plot(Time(1,:),Gtot(2,:),'g--');
 chargeR=sum(sum(Rtot))/100;
 chargeA=sum(sum(Atot))/100;
 chargeG=sum(sum(Gtot))/100;
-totunitDUoS=(chargeR/rateR+chargeA/rateA+chargeG/rateG)*100
+% totunitDUoS=(chargeR/rateR+chargeA/rateA+chargeG/rateG)*100
 DUoSTot= sum(sum(DUoSCharge))/100;
 TotUnit= sum(sum(DataMat));
 Yearcharge = sum(Daycharge)
+Saving = chargeR
 
