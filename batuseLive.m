@@ -142,7 +142,28 @@ for n=1:rowsDataMatmm30
     end
     battotuse(n,1)=sum(batteryuse(n,:));
 end
-figure(4)
+
+unitsR=sum(sum(Rtot));
+unitsA=sum(sum(Atot));
+unitsG=sum(sum(Gtot));
+totunitDUoS=unitsR+unitsA+unitsG;
+chargeRb=sum(sum(RtotwB));
+chargeAb=sum(sum(AtotwB));
+chargeGb=sum(sum(GtotwB));
+totunitDUoSb=chargeRb+chargeAb+chargeGb;
+DUoSTot= sum(sum(DUoSCharge))/100;
+TotUnit= sum(sum(liveDataSelc));
+totbatunit=sum(sum(dataMatBat));
+sumbatuse = sum(sum(battotuse));
+
+% Display Savings
+Yearcharge = sum(Daycharge);
+YearchargewB = sum(DaychargewB);
+Saving = Yearcharge-YearchargewB;
+disp(['Total Saved = £' num2str(Saving)]);
+
+%% Plot Figures
+figure() % Graph of Differnent DuNOS Charges
 plot(TimeMM(1,:),RtotwB(3,:),'r');
 hold on
 plot(TimeMM(1,:),AtotwB(3,:),'y');
@@ -150,29 +171,17 @@ plot(TimeMM(1,:),GtotwB(3,:),'g');
 plot(TimeMM(1,:),Rtot(3,:),'r--');
 plot(TimeMM(1,:),Atot(3,:),'y--');
 plot(TimeMM(1,:),Gtot(3,:),'g--');
-chargeR=sum(sum(Rtot));
-chargeA=sum(sum(Atot));
-chargeG=sum(sum(Gtot));
-totunitDUoS=chargeR+chargeA+chargeG;
-chargeRb=sum(sum(RtotwB));
-chargeAb=sum(sum(AtotwB));
-chargeGb=sum(sum(GtotwB));
-totunitDUoSb=chargeRb+chargeAb+chargeGb;
-DUoSTot= sum(sum(DUoSCharge))/100;
-TotUnit= sum(sum(liveDataSelc))
-totbatunit=sum(sum(dataMatBat));
-sumbatuse = sum(sum(battotuse));
 
-% Display Savings
-Yearcharge = sum(Daycharge);
-YearchargewB = sum(DaychargewB);
-Saving = Yearcharge-YearchargewB
 
-% batprice2=(50:10:1000);
-% batcost2=batprice2.*newCap;
-% nyears2=batcost2./Saving;
-% figure(2)
-% plot(nyears2,batprice2);
-% title('Payback Period for Battery Based on Cost pkWh')
-% xlabel('Payback Time / Years')
-% ylabel('Cost pkWh / £pkWh')
+batprice2=(50:10:1000);
+batcost2=batprice2.*newCap;
+nyears2=batcost2./Saving;
+figure()
+plot(nyears2,batprice2);
+title('Payback Period for Battery Based on Cost pkWh')
+xlabel('Payback Time / Years')
+ylabel('Cost pkWh / £pkWh')
+
+
+
+
