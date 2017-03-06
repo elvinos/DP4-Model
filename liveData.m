@@ -55,27 +55,27 @@ disp(sum(sum(DataMat)));
 disp(sum(sum(dataconv)));
 disp(sum(sum(DataMatmm30))/sum(sum(DataMat))*100)
 % Create Plots
-%   for plsct = 2:2
-%     figure(plsct)
-%     yyaxis left
-%     plot(TimeMM(1,:),livedata(plsct,:))
-%     ylabel('Demand/kW')
-%     hold on
-% %     plot(TimeMM(1,:),DataMatmm(plsct,:));
-%     xlim([0 1440]);
-%     yyaxis right
-%     ylabel('Useage/kWh')
-%     plot(TimeMM(1,:),DataMatmm30(plsct,:));
-%     title('Plot of Live Demand Fit With Minute By Minute Useage Fit')
-%     xlabel('Time / Minutes')
-%   end
+  for plsct = 2:2
+    figure(plsct)
+    yyaxis left
+    plot(TimeMM(1,:),livedata(plsct,:))
+    ylabel('Demand/kW')
+    hold on
+%     plot(TimeMM(1,:),DataMatmm(plsct,:));
+    xlim([0 1440]);
+    yyaxis right
+    ylabel('Useage/kWh')
+    plot(TimeMM(1,:),DataMatmm30(plsct,:));
+    title('Plot of Live Demand Fit With Minute By Minute Useage Fit')
+    xlabel('Time / Minutes')
+  end
   
     for plsct = 3:3
     figure(plsct)
     plot(TimeHH(1,:)*60,DataMat(plsct,:));
     xlim([0 1440]);
     hold on
-    plot(TimeMM(1,:),DataMatmm(plsct,:),'g*');
+    plot(TimeMM(1,:),DataMatmm(plsct,:),'g');
     title('Plot of Live Demand Fit With Minute By Minute Useage Fit')
     xlabel('Time / Minutes')
   end
