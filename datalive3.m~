@@ -113,12 +113,7 @@ while curCap2(1) > 160
         end
             if DUoSrate == rateR
                 if batcap < liveDataSelc(n,c) || batcap-mincap < liveDataSelc(n,c)
-                    if mincap>0 && batcap-mincap < liveDataSelc(n,c)
-                        batteryuse(n,c)= batcap-mincap;
-                        batcap=mincap;
-                    else
                     batteryuse(n,c)= -batcap;
-                    end
                 else
                 batteryuse(n,c)= -liveDataSelc(n,c);
                 end
