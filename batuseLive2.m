@@ -90,7 +90,7 @@ while curCap2(1) > 160
     AtotwB = vertcat(AtotwB,zeros(rowsDataMatmm30,colsDataMatmm30));
     GtotwB = vertcat(GtotwB,zeros(rowsDataMatmm30,colsDataMatmm30));
     batteryuse2 = vertcat(batteryuse2,zeros(rowsDataMatmm30,colsDataMatmm30));
-    DUoSCharge = vertcat(DUoSCharge,GtotwB,zeros(rowsDataMatmm30,colsDataMatmm30));
+    DUoSCharge = vertcat(DUoSCharge,zeros(rowsDataMatmm30,colsDataMatmm30));
     HHcharge = vertcat(HHcharge,zeros(rowsDataMatmm30,colsDataMatmm30));
     Daycharge=vertcat(Daycharge,zeros(rowsDataMatmm30,1));
     set( get(findobj(h,'type','axes'),'title'), 'string',num2str(n/365))
@@ -113,7 +113,6 @@ while curCap2(1) > 160
                  batteryuse(n,c)=0;
                  batcap(c)=batcap(c);
                  DUoSrate = rateA;
-                 rate(n,c)=2;
                  Atot(n,c)= liveDataSelc(n,c);
                  AtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
             else
@@ -128,7 +127,6 @@ while curCap2(1) > 160
                     batteryuse(n,c) = 0;
                 end
               DUoSrate = rateG;
-              rate(n,c)=1;
               Gtot(n,c)= liveDataSelc(n,c);
               GtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
             end
@@ -139,7 +137,6 @@ while curCap2(1) > 160
                 batcap(c)=batcap(c)+batteryuse(n,c); % Capacity of battery
                 wkbatuse(wkday,c)= -batteryuse(n,c); %Cal for Weekday Usage Matrix for Histogram
                 DUoSrate = rateR;
-                rate(n,c)=3;
                 Rtot(n,c)= liveDataSelc(n,c);
                 RtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
             elseif 8*60 < TimeMM(1,c) && TimeMM(1,c) <= 17*60 || 19*60 < TimeMM(1,c) && TimeMM(1,c) <= 21.5*60
@@ -148,7 +145,6 @@ while curCap2(1) > 160
                 DUoSrate = rateA;
                 Atot(n,c)= liveDataSelc(n,c);
                 AtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
-                rate(n,c)=2;
             else
                 if batcap(c) < curCap(1) && curCap(1)-batcap(c) < timetoCharge(1)
                     batteryuse(n,c)=curCap(1)-batcap(c);
@@ -162,14 +158,13 @@ while curCap2(1) > 160
                 DUoSrate = rateG;
                 Gtot(n,c)= liveDataSelc(n,c);
                 GtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
-                rate(n,c)=1;
                 wkbatuse(wkday,c)= 0;
             end
         
         end
         
 %         dataMatBat(n,c)=liveDataSelc(n,c)+batteryuse(n,c);
-        batcharge(n,c)= batcap(c);
+%         batcharge(n,c)= batcap(c);
 %         DUoSCharge(n,c)= (GtotwB(n,c)+AtotwB(n,c)+RtotwB(n,c))*DUoSrate; %Note Two Of these Values Should Always be 0
         HHcharge(n,c) = (Gtot(n,c)+Atot(n,c)+Rtot(n,c))*(DUoSrate+UnitRate); %Note Two Of these Values Should Always be 0
         HHchargewB(n,c) = (GtotwB(n,c)+AtotwB(n,c)+RtotwB(n,c))*(DUoSrate+UnitRate); %Note Two Of these Values Should Always be 0

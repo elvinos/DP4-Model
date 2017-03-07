@@ -2,8 +2,8 @@
 clc
 clear all
 close all
-
-profile on
+% profile clear
+% profile on
 %% Variables
 plsct = 1; %Select the number of Plots to Create
 
@@ -33,7 +33,8 @@ for c = 0.5:0.5:24
 end
 
 %% Battery Calculator
-loops= 27;
+
+loops= 30; % Guess Number of years to speed up Process
 kwhcost = 500;
 batteryuse = zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 wkday = 0;
@@ -50,6 +51,7 @@ HHchargewB = zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 % Daycharge=zeros(rowsDataMatmm30*loops,1);
 Cap=zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 wkbatuse=zeros(rowsDataMatmm30*loops,colsDataMatmm30);
+batchargezeros(rowsDataMatmm30*loops,colsDataMatmm30);
 
 % Powerwall Calculation
 UFCost = 90000;
@@ -59,14 +61,11 @@ newCap = 200; % kWH
 curCap = newCap;
 batcap = curCap;
 ppkWh = UFCost/newCap;
-% perCycleDeg = 0.0336;
 thermalDeg=0;
 OOBDeg=0;
 timetoCharge= 15/30;% kWh per halfHour
 batteryEff =0.92;
-% liveDataSelc=zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 liveDataSelc= DataMatmm30;
-% liveDataSelc(1:rowsDataMatmm30,1:colsDataMatmm30) = DataMatmm30;
 liveDataSelc1=DataMatmm30;
 % dataMatBat=DataMatmm30;
 
@@ -81,7 +80,7 @@ cycle = 0;
 n=0;
 
 h = waitbar(0,'Please wait...');
-tic;
+tic
 while curCap2(1) > 160
     n = n+1;
     if rem((n)/365,1) == 0
@@ -100,33 +99,37 @@ while curCap2(1) > 160
             wkday = wkday+1;
             if  TimeMM(1,c) <= 19*60 && TimeMM(1,c) > 17*60
                 DUoSrate = rateR;
-                wkbatuse(wkday,c)= liveDataSelc(n,c); %Cal for Weekday Usage Matrix for Histogram
+%                 wkbatuse(wkday,c)= liveDataSelc(n,c); %Cal for Weekday Usage Matrix for Histogram
             elseif 8*60 < TimeMM(1,c) && TimeMM(1,c) <= 17*60 || 19*60 < TimeMM(1,c) && TimeMM(1,c) <= 21.5*60
                 DUoSrate = rateA;
-                wkbatuse(wkday,c)= 0;
+%                 wkbatuse(wkday,c)= 0;
             else
                 DUoSrate = rateG;
-                wkbatuse(wkday,c)= 0;
+%                 wkbatuse(wkday,c)= 0;
             end
         end
             if DUoSrate == rateR
+                if curCap2 < liveDataSelc(n,c)
+                    batteryuse(n,c)=0;
+                    disp('too low')
+                end
                 batteryuse(n,c)= -liveDataSelc(n,c);
-                batcap(c)=batcap(c)+batteryuse(n,c);
+                batcap=batcap+batteryuse(n,c);
                 Rtot(n,c)= liveDataSelc(n,c);
                 RtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
             elseif DUoSrate == rateA
-              batteryuse(n,c)=0;
+%               batteryuse(n,c)=0;
               Atot(n,c)= liveDataSelc(n,c);
               AtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
             else
-                if batcap < curCap && curCap-batcap < timetoCharge
-                    batteryuse(n,c)=curCap-batcap;
-                    batcap = curCap;
-                elseif batcap < curCap
+                if batcap < curCap2 && curCap2-batcap < timetoCharge
+                    batteryuse(n,c)=curCap2-batcap;
+                    batcap = curCap2;
+                elseif batcap < curCap2
                     batteryuse(n,c)= timetoCharge;
                     batcap = batcap + batteryuse(n,c);
                 else
-                    batteryuse(n,c) = 0;
+%                     batteryuse(n,c) = 0;
                 end
                 Gtot(n,c)= liveDataSelc(n,c);
                 GtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
@@ -142,33 +145,38 @@ while curCap2(1) > 160
                end
          end
 %       dataMatBat(n,c)=liveDataSelc(n,c)+batteryuse(n,c);
-%       batcharge(n,c)= batcap(c);
+        batcharge(n,c)= batcap;
 %       DUoSCharge(n,c)= (GtotwB(n,c)+AtotwB(n,c)+RtotwB(n,c))*DUoSrate; %Note Two Of these Values Should Always be 0
         HHcharge(n,c) = (liveDataSelc(n,c))*(DUoSrate+UnitRate); %Note Two Of these Values Should Always be 0
         HHchargewB(n,c) = (liveDataSelc(n,c)+batteryuse(n,c))*(DUoSrate+UnitRate); %Note Two Of these Values Should Always be 0
 
     end
-    c=1440;
+%     c=1440;
 
 % battotuse(n,1)=sum(batteryuse(n,:));
+if rem((n)/365,1) == 0 || rem((n)/182,1) == 0 
  waitbar((200-Cap(n,c))/ 40);
+end
 end
 
 runtime=toc;
-DaychargewB= sum(HHchargewB)./100; %Daily Cost in Pounds
-Daycharge= sum(HHcharge)./100; %Daily Cost in Pounds
-if wkday > 0
-    wkdaybattotuse=sum(wkbatuse);
-end
+DaychargewB= (sum(HHchargewB')./100)'; %Daily Cost in Pounds
+Daycharge= (sum(HHcharge')./100)'; %Daily Cost in Pounds
+% if wkday > 0
+%     wkdaybattotuse=sum(wkbatuse);
+% end
 % Display Savings
-Yearcharge = sum(Daycharge);
-YearchargewB = sum(DaychargewB);
-Saving = Yearcharge-YearchargewB;
+lifecharge = sum(Daycharge);
+lifechargewB = sum(DaychargewB);
+Saving = lifecharge-lifechargewB;
 disp(['Total Saved = £' num2str(Saving)]);
 close(h)
-disp(['Years: ' num2str(n)]);
+disp(['Years: ' num2str(n/365)]);
 disp(['Cycles: ' num2str(cycle)]);
-disp(['Run Time: ' num2str(runtime/60)]);
-profile off
+disp(['Run Time: ' num2str(runtime) ' Seconds']);
 
-profile viewer
+filename = 'batteryuse.xlsx';
+xlswrite(filename,batterycharge,'Sheet 1','A1')
+% profile off
+% 
+% profile viewer
