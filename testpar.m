@@ -11,9 +11,12 @@ noCycles= 5000;
 endlife= 0.8;
 perCycleDeg=(curCap2-curCap2*endlife)/noCycles;
 y= 1;
+use= 0;
+cycle = 0;
+n=0;
 
 batteryuse2=vertcat(batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse);
-batteryuse3=batteryuse2;
+batteryuse3=gpuArray(batteryuse2);
 negbats= find(batteryuse3<0);
 batteryuse3(negbats)=0;
 % batteryuse3(batteryuse3<0)=[];
@@ -21,27 +24,27 @@ batteryuse3(negbats)=0;
 % colsBatUse = size(batteryuse3,2);
 
 %% Loop
-n=0;
+
 h = waitbar(0,'Please wait...');
-use= 0;
-cycle = 0;
+
 while curCap2 > 160
 n=n+1;
-   for c= 1:1440
-       curCap2=curCap2-(batteryuse3(n,c)*perCycleDeg/curCap2);
+   for c= 1:1440     
+       curCap2=gather(curCap2-(batteryuse3(n,c)*perCycleDeg/curCap2));
        Cap(n,c)=curCap2;
        use = batteryuse3(n,c)+use;
        if curCap2 <= use
        cycle=cycle + 1;
-       use = 0;
+       use = use-curCap2;
        end
    end
- waitbar((200-Cap(n,c))/ 40)   
+%  waitbar((200-Cap(n,c))/ 40)  
+ if rem((n)/365,1) == 0
+%  set(get(findobj(h,'type','axes'),'title'), 'string',num2str(n/365))
+ end
 end
-close(h)
+% close(h)
 totbatteryuse = batteryuse3(1:n,:);
 disp(n)
 disp(cycle)
 toc
-
-

@@ -11,6 +11,9 @@ noCycles= 5000;
 endlife= 0.8;
 perCycleDeg=(curCap2-curCap2*endlife)/noCycles;
 y= 1;
+use= 0;
+cycle = 0;
+n=0;
 
 batteryuse2=vertcat(batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse,batteryuse);
 batteryuse3=batteryuse2;
@@ -21,10 +24,9 @@ batteryuse3(negbats)=0;
 % colsBatUse = size(batteryuse3,2);
 
 %% Loop
-n=0;
+
 h = waitbar(0,'Please wait...');
-use= 0;
-cycle = 0;
+
 while curCap2 > 160
 n=n+1;
    for c= 1:1440
