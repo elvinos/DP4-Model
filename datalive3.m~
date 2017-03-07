@@ -53,29 +53,30 @@ HHchargewB = zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 Cap=zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 wkbatuse=zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 batcharge=zeros(rowsDataMatmm30*loops,colsDataMatmm30);
+liveDataSelc= DataMatmm30;
+liveDataSelc1=DataMatmm30;
+
 
 % Powerwall Calculation
 UFCost = 90000;
 INCost = 0;
 mainCost = 0;
 newCap = 200; % kWH
+% ppkWh = UFCost/newCap;
 doD = 0.8;
-curCap = ((1-doD)/2+dod)*newCap;
+curCap = ((1-doD)/2+doD)*newCap;
+maxCap = ((1-doD)/2+doD)*newCap;
+minCap=((1-doD)/2)*newCap;
 % curCap = newCap;
 batcap = curCap;
-ppkWh = UFCost/newCap;
 thermalDeg=0;
 OOBDeg=0;
 timetoCharge= 15/30;% kWh per halfHour
 batteryEff =0.92;
-liveDataSelc= DataMatmm30;
-liveDataSelc1=DataMatmm30;
-% dataMatBat=DataMatmm30;
-
-%% Battery Deg
-curCap2=200;
+curCap2=maxCap;
 noCycles= 5000;
 endlife= 0.8;
+endlifeval=0.8*curCap2;
 perCycleDeg=(curCap2-curCap2*endlife)/noCycles;
 y= 1;
 use= 0;
@@ -84,7 +85,7 @@ n=0;
 
 h = waitbar(0,'Please wait...');
 tic
-while curCap2(1) > 160
+while curCap2 > endlifeval
     n = n+1;
     if rem((n)/365,1) == 0
     liveDataSelc= vertcat(liveDataSelc,liveDataSelc1);
@@ -112,8 +113,13 @@ while curCap2(1) > 160
             end
         end
             if DUoSrate == rateR
-                if batcap < liveDataSelc(n,c) || batcap-mincap < liveDataSelc(n,c)
+                if batcap < liveDataSelc(n,c) || batcap-minCap < liveDataSelc(n,c)
+                    if minCap>0 && batcap-minCap < liveDataSelc(n,c)
+                        batteryuse(n,c)= batcap-minCap;
+                        batcap=minCap;
+                    else
                     batteryuse(n,c)= -batcap;
+                    end
                 else
                 batteryuse(n,c)= -liveDataSelc(n,c);
                 end
@@ -159,7 +165,7 @@ while curCap2(1) > 160
 
 % battotuse(n,1)=sum(batteryuse(n,:));
 if rem((n)/365,1) == 0 || rem((n)/182,1) == 0 
- waitbar((200-Cap(n,c))/ 40);
+ waitbar((maxCap-Cap(n,c))/ (maxCap-endlifeval));
 end
 end
 

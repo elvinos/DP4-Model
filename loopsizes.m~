@@ -34,7 +34,38 @@ end
 
 %% Battery Calculator
 
-loops= 28; % Guess Number of years to speed up Process
+
+
+% Powerwall Calculation
+% UFCost = 90000;
+% INCost = 0;
+% mainCost = 0;
+s= 1;
+for newCap = 100:50:400
+% newCap = 200; % kWH
+ppkWh = 500;
+ufcost(s) =ppkWh*newCap;
+doD = 0.8;
+curCap = ((1-doD)/2+doD)*newCap;
+maxCap = ((1-doD)/2+doD)*newCap;
+minCap=((1-doD)/2)*newCap;
+% curCap = newCap;
+batcap = curCap;
+thermalDeg=0;
+OOBDeg=0;
+timetoCharge= 15/30;% kWh per halfHour
+batteryEff =0.92;
+curCap2=maxCap;
+noCycles= 5000;
+endlife= 0.8;
+endlifeval=0.8*curCap2;
+perCycleDeg=(curCap2-curCap2*endlife)/noCycles;
+y= 1;
+use= 0;
+cycle = 0;
+n=0;
+
+loops= 50; % Guess Number of years to speed up Process
 kwhcost = 500;
 batteryuse = zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 wkday = 0;
@@ -56,36 +87,9 @@ batcharge=zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 liveDataSelc= DataMatmm30;
 liveDataSelc1=DataMatmm30;
 
-
-% Powerwall Calculation
-UFCost = 90000;
-INCost = 0;
-mainCost = 0;
-newCap = 200; % kWH
-ppkWh = UFCost/newCap;
-doD = 0.8;
-curCap = ((1-doD)/2+doD)*newCap;
-maxCap = ((1-doD)/2+doD)*newCap;
-minCap=((1-doD)/2)*newCap;
-% curCap = newCap;
-batcap = curCap;
-thermalDeg=0;
-OOBDeg=0;
-timetoCharge= 15/30;% kWh per halfHour
-batteryEff =0.92;
-curCap2=maxCap;
-noCycles= 5000;
-endlife= 0.8;
-endlifeval=0.8*curCap2;
-perCycleDeg=(curCap2-curCap2*endlife)/noCycles;
-y= 1;
-use= 0;
-cycle = 0;
-n=0;
-
 h = waitbar(0,'Please wait...');
 tic
-while curCap2 > endlifeval
+while curCap2 > endlifeval 
     n = n+1;
     if rem((n)/365,1) == 0
     liveDataSelc= vertcat(liveDataSelc,liveDataSelc1);
@@ -167,6 +171,9 @@ while curCap2 > endlifeval
 if rem((n)/365,1) == 0 || rem((n)/182,1) == 0 
  waitbar((maxCap-Cap(n,c))/ (maxCap-endlifeval));
 end
+if n > 24*365
+    break
+end
 end
 
 runtime=toc;
@@ -178,15 +185,20 @@ Daycharge= (sum(HHcharge')./100)'; %Daily Cost in Pounds
 % Display Savings
 lifecharge = sum(Daycharge);
 lifechargewB = sum(DaychargewB);
-Saving = lifecharge-lifechargewB;
+Saving(s) = lifecharge-lifechargewB;
 disp(['Total Saved = £' num2str(Saving)]);
 close(h)
 disp(['Years: ' num2str(n/365)]);
 disp(['Cycles: ' num2str(cycle)]);
 disp(['Run Time: ' num2str(runtime) ' Seconds']);
-batcharge(n:size(batcharge,1),:)=[];
-DUoS= sum(sum(DUoSCharge));
-DUoSwB= sum(sum(DUoSChargewB));
+% batcharge(n:size(batcharge,1),:)=[];
+% DUoS= sum(sum(DUoSCharge));
+% DUoSwB= sum(sum(DUoSChargewB));
+s= s+1;
+end
+
+plot(100:50:400,Saving-ufcost)
+ 
 % totR= sum(sum(RtotwB));
 % disp(totR);
 % filename = 'batterycharge';
