@@ -37,9 +37,10 @@ for n=1:rowsDataMat
             DataMatmm30(n,mm)=DataMatmm(n,mm)/29.995; % kWh Useage Per Minute
             % Use a Normally Distributed Random Number to show Change in
             % Usegae Minute by Minute
-            livedata(n,mm)=2*(DataMatmm(n,mm)+randn/rnfit);
+            livedatause(n,mm)=2*(DataMatmm(n,mm)+randn/rnfit);
+            livedatadem(n,mm)=(DataMatmm(n,mm)+randn/rnfit);
         end
-        livedataav(n,c)=mean(livedata(n,mm-29:mm)); % Method to Check the Fit of Code
+        livedataav(n,c)=mean(livedatause(n,mm-29:mm)); % Method to Check the Fit of Code
     end
 end
 
@@ -58,7 +59,7 @@ disp(sum(sum(DataMatmm30))/sum(sum(DataMat))*100)
   for plsct = 2:2
     figure(plsct)
     yyaxis left
-    plot(TimeMM(1,:),livedata(plsct,:))
+    plot(TimeMM(1,:),livedatause(plsct,:))
     ylabel('Demand/kW')
     hold on
 %     plot(TimeMM(1,:),DataMatmm(plsct,:));
@@ -75,15 +76,15 @@ disp(sum(sum(DataMatmm30))/sum(sum(DataMat))*100)
     plot(TimeHH(1,:)*60,DataMat(plsct,:));
     xlim([0 1440]);
     hold on
-    plot(TimeMM(1,:),DataMatmm(plsct,:),'g');
+    plot(TimeMM(1,:),livedatadem(plsct,:),'g');
     title('Plot of Live Demand Fit With Minute By Minute Useage Fit')
     xlabel('Time / Minutes')
   end
   
   
     % Validate Code 
-%     datasum = sum(DataMat(2,:));
-%     datammsum = sum(DataMatmm30(2,:));
-%     livesum = trapz(livedata(2,:))/60;
+    datasum = sum(DataMat(2,:));
+    datammsum = sum(DataMatmm30(2,:));
+    livesum = trapz(livedatause(2,:))/60;
     
 

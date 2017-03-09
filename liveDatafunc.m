@@ -1,4 +1,4 @@
-function [livedata,DataMatmm30] = liveDatafunc(rnfit)
+function [livedata,DataMatmm30, DataMat] = liveDatafunc(rnfit)
 
 % Script That Turns Half Hourly Useage Data into Minute by Minute Useage
 % Data

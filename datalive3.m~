@@ -34,7 +34,7 @@ end
 
 %% Battery Calculator
 
-loops= 28; % Guess Number of years to speed up Process
+loops= 40; % Guess Number of years to speed up Process
 kwhcost = 500;
 batteryuse = zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 wkday = 0;
@@ -62,7 +62,7 @@ UFCost = 90000;
 INCost = 0;
 mainCost = 0;
 newCap = 200; % kWH
-% ppkWh = UFCost/newCap;
+ppkWh = UFCost/newCap;
 doD = 0.8;
 curCap = ((1-doD)/2+doD)*newCap;
 maxCap = ((1-doD)/2+doD)*newCap;
@@ -82,6 +82,7 @@ y= 1;
 use= 0;
 cycle = 0;
 n=0;
+year=1;
 
 h = waitbar(0,'Please wait...');
 tic
@@ -112,7 +113,7 @@ while curCap2 > endlifeval
 %                 wkbatuse(wkday,c)= 0;
             end
         end
-            if DUoSrate == rateR
+        if DUoSrate == rateR
                 if batcap < liveDataSelc(n,c) || batcap-minCap < liveDataSelc(n,c)
                     if minCap>0 && batcap-minCap < liveDataSelc(n,c)
                         batteryuse(n,c)= batcap-minCap;
@@ -154,12 +155,11 @@ while curCap2 > endlifeval
                end
          end
 %       dataMatBat(n,c)=liveDataSelc(n,c)+batteryuse(n,c);
-         batcharge(n,c)= batcap;
+        batcharge(n,c)= batcap;
 %         DUoSCharge(n,c)= (Gtot(n,c)+Atot(n,c)+Rtot(n,c))*DUoSrate;
 %         DUoSChargewB(n,c)= (GtotwB(n,c)+AtotwB(n,c)+RtotwB(n,c))*DUoSrate; %Note Two Of these Values Should Always be 0
         HHcharge(n,c) = (liveDataSelc(n,c))*(DUoSrate+UnitRate); %Note Two Of these Values Should Always be 0
         HHchargewB(n,c) = (liveDataSelc(n,c)+batteryuse(n,c))*(DUoSrate+UnitRate); %Note Two Of these Values Should Always be 0
-
     end
 %     c=1440;
 
@@ -167,15 +167,56 @@ while curCap2 > endlifeval
 if rem((n)/365,1) == 0 || rem((n)/182,1) == 0 
  waitbar((maxCap-Cap(n,c))/ (maxCap-endlifeval));
 end
+
+if rem((n)/365,1) == 0
+    yearchargewB(year,:) = sum(sum(HHchargewB(n-364:n,1:1440))');
+    yearcharge(year,:) = sum(sum(HHcharge(n-364:n,1:1440))');
+    batcap2(year)= Cap(n,1440);
+    RtotwB2(year)= sum(sum(RtotwB(n-364:n,1:1440)));
+    Rtot2(year)= sum(sum(Rtot(n-364:n,1:1440)));
+    year = year + 1;
 end
+
+end
+
+yeartot=sum(yearcharge-yearchargewB)';
 
 runtime=toc;
 DaychargewB= (sum(HHchargewB')./100)'; %Daily Cost in Pounds
 Daycharge= (sum(HHcharge')./100)'; %Daily Cost in Pounds
+savday=Daycharge-DaychargewB;
+
+nds=1;
+sav3=savday(1);
+while UFCost > sav3
+    nds=nds+1;
+    sav3= sum(savday(1:nds,1));
+end
+
 % if wkday > 0
 %     wkdaybattotuse=sum(wkbatuse);
 % end
 % Display Savings
+
+y = n/365;
+s=1;
+for its=1:y
+    itsstart=365*(its-1)+1;
+    itsend=365*(its);
+Savingpy(s,its) = sum(savday(itsstart:itsend,:))';
+end
+s=2;
+for bb = 1:(s-1)
+    saving2 = Savingpy(bb,1);
+    pbyear=1;
+    while UFCost(bb) > saving2
+        pbyear = pbyear+1;
+        saving2 = sum(Savingpy(bb,1:pbyear));
+    end
+    ny(bb) = pbyear;
+end
+
+
 lifecharge = sum(Daycharge);
 lifechargewB = sum(DaychargewB);
 Saving = lifecharge-lifechargewB;

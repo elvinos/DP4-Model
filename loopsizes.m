@@ -1,7 +1,7 @@
 %% Clear And Close
 clc
 clear all
-% close all
+close all force
 % profile clear
 % profile on
 %% Variables
@@ -41,7 +41,11 @@ end
 % INCost = 0;
 % mainCost = 0;
 s= 1;
-for newCap = 100:25:400
+minCAP=140;
+maxCAP=300;
+step=40;
+h = waitbar(0,'Please wait...');
+for newCap = minCAP:step:maxCAP
 % newCap = 200; % kWH
 ppkWh = 500;
 ufcost(s) =ppkWh*newCap;
@@ -56,7 +60,7 @@ OOBDeg=0;
 timetoCharge= 15/30;% kWh per halfHour
 batteryEff =0.92;
 curCap2=maxCap;
-noCycles= 4000;
+noCycles= 5000;
 endlife= 0.8;
 endlifeval=0.8*curCap2;
 perCycleDeg=(curCap2-curCap2*endlife)/noCycles;
@@ -87,13 +91,12 @@ batcharge=zeros(rowsDataMatmm30*loops,colsDataMatmm30);
 liveDataSelc= DataMatmm30;
 liveDataSelc1=DataMatmm30;
 
-h = waitbar(0,'Please wait...');
 tic
 while curCap2 > endlifeval 
     n = n+1;
     if rem((n)/365,1) == 0
     liveDataSelc= vertcat(liveDataSelc,liveDataSelc1);
-    set( get(findobj(h,'type','axes'),'title'), 'string',num2str(n/365))
+%     set( get(findobj(h,'type','axes'),'title'), 'string',num2str(n/365))
     end
 
     for c = 1:colsDataMatmm30
@@ -167,37 +170,81 @@ while curCap2 > endlifeval
     end
 %     c=1440;
 
-% battotuse(n,1)=sum(batteryuse(n,:));
-if rem((n)/365,1) == 0 || rem((n)/182,1) == 0 
- waitbar((maxCap-Cap(n,c))/ (maxCap-endlifeval));
-end
-if n > 24*365
-    break
-end
+     if rem((n)/365,1) == 0 || rem((n)/182,1) == 0 
+%      waitbar((maxCap-Cap(n,c))/ (maxCap-endlifeval));
+    end
+    if n > 24*365
+        break
+    end
+    
 end
 
 runtime=toc;
 DaychargewB= (sum(HHchargewB')./100)'; %Daily Cost in Pounds
 Daycharge= (sum(HHcharge')./100)'; %Daily Cost in Pounds
+
+
 % if wkday > 0
 %     wkdaybattotuse=sum(wkbatuse);
 % end
 % Display Savings
+y = n/365;
+for its=1:y
+    itsstart=365*(its-1)+1;
+    itsend=365*(its);
+yearcharge(its) = sum(Daycharge(itsstart:itsend,:));
+yearchargewB(its) = sum(DaychargewB(itsstart:itsend,:));
+Savingpy(s,its) = yearcharge(its)-yearchargewB(its);
+end
+
 lifecharge = sum(Daycharge);
 lifechargewB = sum(DaychargewB);
 Saving(s) = lifecharge-lifechargewB;
-disp(['Total Saved = £' num2str(Saving)]);
-close(h)
+disp(['Total Saved = £' num2str(Saving(s))]);
+
 disp(['Years: ' num2str(n/365)]);
 disp(['Cycles: ' num2str(cycle)]);
 disp(['Run Time: ' num2str(runtime) ' Seconds']);
+
 % batcharge(n:size(batcharge,1),:)=[];
 % DUoS= sum(sum(DUoSCharge));
 % DUoSwB= sum(sum(DUoSChargewB));
+waitbar(((step*s))/ (maxCAP-minCAP));
 s= s+1;
 end
+close(h)
 
-plot(100:25:400,Saving-ufcost)
+totsaving= Saving-ufcost;
+
+plot(minCAP:step:maxCAP,totsaving)
+title('Battery Size vs Total Saving')
+xlabel('Battery Size / kWh')
+ylabel('Total Saving')
+ 
+
+LineH = get(gca, 'children');
+Value = get(LineH, 'YData');
+Size = get(LineH, 'XData');
+
+
+[maxValue, maxIndex] = max(Value);
+maxSize = Size(maxIndex);
+
+for bb = 1:(s-1)
+    saving2 = Savingpy(bb,1);
+    pbyear=1;
+    while ufcost(bb) > saving2
+        pbyear = pbyear+1;
+        saving2 = sum(Savingpy(bb,1:pbyear));
+    end
+    ny(bb) = pbyear;
+end
+% batprice2=(50:10:1000);
+% figure()
+% plot(,batprice2);
+title('Payback Period for Battery Based on Cost pkWh')
+xlabel('Payback Time / Years')
+ylabel('Cost pkWh / £pkWh')
  
 % totR= sum(sum(RtotwB));
 % disp(totR);
