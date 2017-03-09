@@ -5,7 +5,7 @@ close all
 
 %% Variables
 plsct = 1; %Select the number of Plots to Create
-rnfit = 2; % Select the fit of Different kWh Samples
+rnfit = 1; % Select the fit of Different kWh Samples
 %% Create Data
 
 fileName = 'senateEDD.csv';
@@ -34,11 +34,12 @@ for n=1:rowsDataMat
             mm = (c-1)*30 + m;
             TimeMM(:,mm)= mm;
             DataMatmm(n,mm)=grad(n,c)*(mm)+const(n,c); % kWh Usage Per Half Hour with Minute by Minute Data Segments
-            DataMatmm30(n,mm)=DataMatmm(n,mm)/29.995; % kWh Useage Per Minute
+            DataMatmm30(n,mm)=DataMatmm(n,mm)/30; % kWh Useage Per Minute
             % Use a Normally Distributed Random Number to show Change in
             % Usegae Minute by Minute
-            livedatause(n,mm)=2*(DataMatmm(n,mm)+randn/rnfit);
-            livedatadem(n,mm)=(DataMatmm(n,mm)+randn/rnfit);
+%             livedatause(n,mm)=2*(DataMatmm(n,mm)+randn/rnfit);
+            livedatadem(n,mm)=(DataMatmm30(n,mm)+randn/(rnfit*29.995));
+            livedatause(n,mm)=2*29.995*livedatadem(n,mm);
         end
         livedataav(n,c)=mean(livedatause(n,mm-29:mm)); % Method to Check the Fit of Code
     end
@@ -51,10 +52,7 @@ for t=1:48
     datasum=sum(datatest');
     dataconv(:,t)=datasum;
 end
-disp(sum(sum(DataMatmm30)));
-disp(sum(sum(DataMat)));
-disp(sum(sum(dataconv)));
-disp(sum(sum(DataMatmm30))/sum(sum(DataMat))*100)
+
 % Create Plots
   for plsct = 2:2
     figure(plsct)
@@ -73,7 +71,7 @@ disp(sum(sum(DataMatmm30))/sum(sum(DataMat))*100)
   
     for plsct = 3:3
     figure(plsct)
-    plot(TimeHH(1,:)*60,DataMat(plsct,:));
+    plot(TimeMM(1,:),DataMatmm30(plsct,:));
     xlim([0 1440]);
     hold on
     plot(TimeMM(1,:),livedatadem(plsct,:),'g');
@@ -83,8 +81,11 @@ disp(sum(sum(DataMatmm30))/sum(sum(DataMat))*100)
   
   
     % Validate Code 
-    datasum = sum(DataMat(2,:));
-    datammsum = sum(DataMatmm30(2,:));
-    livesum = trapz(livedatause(2,:))/60;
+    datasum = sum(DataMat(2,:))
+    datammsum = sum(DataMatmm30(2,:))
+    livedemsum = sum(livedatadem(2,:))
+    livesum = trapz(livedatause(2,:))/60
+    datausesum = trapz(DataMat(2,:))
     
+   
 

@@ -242,9 +242,9 @@ end
 % batprice2=(50:10:1000);
 % figure()
 % plot(,batprice2);
-title('Payback Period for Battery Based on Cost pkWh')
-xlabel('Payback Time / Years')
-ylabel('Cost pkWh / £pkWh')
+% title('Payback Period for Battery Based on Cost pkWh')
+% xlabel('Payback Time / Years')
+% ylabel('Cost pkWh / £pkWh')
  
 % totR= sum(sum(RtotwB));
 % disp(totR);
