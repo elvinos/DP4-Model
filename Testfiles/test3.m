@@ -1,1 +1,1 @@
-Z = zeros(8192,1,'gpuArray');
+datalivefunc(90000, 190, 100)
