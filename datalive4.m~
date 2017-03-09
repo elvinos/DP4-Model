@@ -62,7 +62,7 @@ cumSavings=zeros(rowsDataSelec*loops,1);
 
 
 % Powerwall Calculation
-UFCost = 90000;
+UFCost = 86330;
 INCost = 0;
 mainCost = 0;
 newCap = 200; % kWH
@@ -157,12 +157,12 @@ while curCap > endlifeval
 %                     disp(['trickle charge ', num2str(sum(sum(batteryuse))), ' Day ', num2str(n), ' Min ', num2str(c)])
                   end
                 else
-                  batteryuse(n,c)= ChargeRate;
+                  batteryuse(n,c) = ChargeRate;
                 end
             end
             chrg= chrg+batteryuse(n,c);
             Gtot(n,c)= liveDataSelc(n,c);
-            GtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
+            GtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c)*batteryEff);
           else
             disp('hhmmm')
         end
@@ -234,8 +234,9 @@ Daycharge= (sum(HHcharge')./100)'; %Daily Cost in Pounds
 lifecharge = sum(Daycharge);
 lifechargewB = sum(DaychargewB);
 Saving = lifecharge-lifechargewB;
-disp(['Total Saved P ' num2str(Saving)]);
 close(h)
+disp(['Total Saved P ' num2str(Saving)]);
+disp(['Payback Period: ' num2str(pbtime/365) ' Years']);
 disp(['Years: ' num2str(n/365)]);
 disp(['Cycles: ' num2str(cycle)]);
 disp(['Run Time: ' num2str(runtime) ' Seconds']);
@@ -245,9 +246,16 @@ disp(['Run Time: ' num2str(runtime) ' Seconds']);
 
 %% Plots
 cumSavings(n:size(cumSavings,1),:)=[];
-plot(0:n-2,cumSavings)
-title('Payback Period')
-xlabel(''
+tt=1;
+for t = 1:365:n-1
+    cumSavyear(tt)=cumSavings(t);
+    tt=tt+1;
+end
+
+plot((1:365:n-1)/365,cumSavyear)
+title('Payback Period For Battery')
+xlabel('Time / Years')
+ylabel('Cumlative Savings / £')
 
 
 % filename = 'BatUse';

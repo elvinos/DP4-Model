@@ -59,8 +59,6 @@ wkbatuse=zeros(rowsDataSelec*loops,colsDataSelec);
 batcharge=zeros(rowsDataSelec*loops,colsDataSelec);
 cumSavings=zeros(rowsDataSelec*loops,1);
 
-
-
 % Powerwall Calculation
 UFCost = 86330;
 INCost = 0;
@@ -157,12 +155,12 @@ while curCap > endlifeval
 %                     disp(['trickle charge ', num2str(sum(sum(batteryuse))), ' Day ', num2str(n), ' Min ', num2str(c)])
                   end
                 else
-                  batteryuse(n,c)= ChargeRate;
+                  batteryuse(n,c) = ChargeRate;
                 end
             end
             chrg= chrg+batteryuse(n,c);
             Gtot(n,c)= liveDataSelc(n,c);
-            GtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
+            GtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c)*(1/batteryEff)); %Added Losses in Bat Efficiency
           else
             disp('hhmmm')
         end
@@ -177,9 +175,11 @@ while curCap > endlifeval
                    use = use-curCap;
                end
                maxCharge = ((1-doD)/2+doD)*curCap;
-               minCharge =((1-doD)/2)*curCap;
+               minCharge =((1-doD)/2)*curCap; 
+               HHchargewB(n,c) = (liveDataSelc(n,c)+batteryuse(n,c)*(1/batteryEff))*(DUoSrate+UnitRate); %Added Losses in Bat Efficiency
          else 
              Cap(n,c)=curCap;
+             HHchargewB(n,c) = (liveDataSelc(n,c)+batteryuse(n,c))*(DUoSrate+UnitRate);
          end
          
         if  day==1
@@ -189,7 +189,7 @@ while curCap > endlifeval
 %       DUoSCharge(n,c)= (Gtot(n,c)+Atot(n,c)+Rtot(n,c))*DUoSrate;
 %       DUoSChargewB(n,c)= (GtotwB(n,c)+AtotwB(n,c)+RtotwB(n,c))*DUoSrate; %Note Two Of these Values Should Always be 0
         HHcharge(n,c) = (liveDataSelc(n,c))*(DUoSrate+UnitRate);
-        HHchargewB(n,c) = (liveDataSelc(n,c)+batteryuse(n,c))*(DUoSrate+UnitRate);
+     
     end
     
    
