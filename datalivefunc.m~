@@ -1,4 +1,4 @@
-function [cumSavyear,year,Saving,pbtime] = datalivefunc(UFCost, newCap, maxPower,runlen)
+function [cumSavyear,year,Saving,pbtime,SavingPY] = datalivefunc(fileName,UFCost, newCap, maxPower,runlen)
 %% Variables
 % set runlen to 0 for running battery until failure
 % Rates in Pence
@@ -6,15 +6,18 @@ UnitRate = 6.832;
 rateR=24.41;
 rateA=0.287;
 rateG=0.161;
-rnfit=2;
-[livedata,DataMatmm30,DataMat] =liveDatafunc(rnfit);
+[livedatause,DataMatmm30,DataMat,sdate] =liveDatafunc(fileName);
 
 %% Battery Calculator
-liveDataSelc= livedata;
+liveDataSelc= livedatause(1:365,:);
 liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
 rowsDataSelec = size(liveDataSelc,1);
 colsDataSelec = size(liveDataSelc,2);
-liveDataSelc1= vertcat(liveDataSelc(2:rowsDataSelec,:),liveDataSelc(2,:),liveDataSelc(3:rowsDataSelec,:),liveDataSelc(2:3,:),liveDataSelc(4:rowsDataSelec,:),liveDataSelc(2:4,:),liveDataSelc(5:rowsDataSelec,:),liveDataSelc(2:5,:),liveDataSelc(6:rowsDataSelec,:),liveDataSelc(2:6,:),liveDataSelc(7:rowsDataSelec,:),liveDataSelc(2:7,:),liveDataSelc);
+liveDataSelc1= liveDataSelc;
+
+
+
+% liveDataSelc1= vertcat(liveDataSelc(2:rowsDataSelec,:),liveDataSelc(2,:),liveDataSelc(3:rowsDataSelec,:),liveDataSelc(2:3,:),liveDataSelc(4:rowsDataSelec,:),liveDataSelc(2:4,:),liveDataSelc(5:rowsDataSelec,:),liveDataSelc(2:5,:),liveDataSelc(6:rowsDataSelec,:),liveDataSelc(2:6,:),liveDataSelc(7:rowsDataSelec,:),liveDataSelc(2:7,:),liveDataSelc);
 
 for c = 1:1:colsDataSelec
     if colsDataSelec > 48
@@ -24,14 +27,20 @@ for c = 1:1:colsDataSelec
     end
 end
 
-loops= 42; % Guess Number of years to speed up Process
-for j = 1:loops/7
+loops= runlen; % Guess Number of years to speed up Process
+for j = 1:ceil(loops/7)
 liveDataSelc = vertcat(liveDataSelc,liveDataSelc1);
  if colsDataSelec == 48
-    liveDataUse=liveDataSelc;
+    liveDataDem=liveDataSelc;
  else
-     liveDataUse = 2*29.995*liveDataSelc;
+     liveDataDem = 2*29.995*liveDataSelc;
  end
+end
+for n=1:ceil(loops/7)
+for gg= 2:2+5
+     liveDataSelc1 = vertcat(liveDataSelc1,liveDataSelc(gg:rowsDataSelec,:),liveDataSelc(2:gg,:));
+end
+     liveDataSelc1 = vertcat(liveDataSelc1,liveDataSelc);
 end
 
 % Powerwall Calculation
@@ -89,12 +98,21 @@ SavingPY= zeros(1,loops);
 cumSavyear=zeros(1,loops);
 cumSavings(1)= -UFCost;
 triadcost=zeros(1,loops);
-
+triadcost(1)=0;
 % Triad Information:
-strtdate=datenum('10-Aug-2014');
+strtdate= datenum(char(sdate),'dd/mm/yyyy',2000);
 t1='04-Dec-2014';
 t2='19-Jan-2015';
 t3='02-Feb-2015';
+if datenum(t1) < strtdate
+    [Y,M,D] = datevec(strtdate);
+    [Y1,M1,D1] = datevec(t1);
+    [Y2,M2,D2] = datevec(t2);
+    [Y3,M3,D3] = datevec(t3);
+    t1 = datestr(datenum(Y,M1,D1)); 
+    t2 = datestr(datenum(Y+1,M2,D2));
+    t3 = datestr(datenum(Y+1,M3,D3)); 
+end
 triadrate= 33.55; % £ per KW
 nn=1;
 tu=1;
@@ -149,8 +167,8 @@ while curCap > endlifeval
         end
 
         if DUoSrate == rateR
-            if liveDataUse(n,c) > maxPower
-                overpower(n,c)= (maxPower/liveDataUse(n,c))*liveDataSelc(n,c);
+            if liveDataDem(n,c) > maxPower
+                overpower(n,c)= (maxPower/liveDataDem(n,c))*liveDataSelc(n,c);
             else
                 overpower(n,c) = liveDataSelc(n,c);
             end
@@ -207,10 +225,10 @@ while curCap > endlifeval
         HHcharge(n,c) = (liveDataSelc(n,c))*(DUoSrate+UnitRate);
         
         if tday == 1 && c == 1050
-            if liveDataUse(n,c) > maxPower
+            if liveDataDem(n,c) > maxPower
                 triadunit(year,tu) = maxPower;
             else
-                triadunit(year,tu)=liveDataUse(n,c);
+                triadunit(year,tu)=liveDataDem(n,c);
             end
             tu= tu+1;
         end
@@ -218,18 +236,14 @@ while curCap > endlifeval
     end
     
    if year > 1 % USING TRIAD RATES of Previous Year Distributed Evenly
-        cumSavings(n+1,:)= cumSavings(n,:)+((sum(sum(HHcharge(n,1:colsDataSelec)))-sum(sum(HHchargewB(n,1:colsDataSelec))))./100)+triadcost(year-1)/365;
+        cumSavings(n+1,:)= cumSavings(n,:)+((sum(sum(HHcharge(n,1:colsDataSelec)))-sum(sum(HHchargewB(n,1:colsDataSelec))))./100)+triadcost(year)/365;
    else
         cumSavings(n+1,:)= cumSavings(n,:)+(sum(sum(HHcharge(n,1:colsDataSelec)))-sum(sum(HHchargewB(n,1:colsDataSelec))))./100;
    end
     if  cumSavings(n+1,:) > 0 && isempty(pbtime)
         pbtime = n;
     end
-     
-    if runlen == 0
-    if rem((n)/365,1) == 0 || rem((n)/182,1) == 0
-      waitbar((newCap-Cap(n,c))/ (newCap-endlifeval));
-    end
+
 
         if  day==1
             wkday = wkday+1;        
@@ -239,26 +253,45 @@ while curCap > endlifeval
         yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec))');
         yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec))');
          % For Triads
-        triadcost(year) = triadrate*(triadunit(year,1) +triadunit(year,2) + triadunit(year,3))/3; 
+        triadcost(year+1) = triadrate*(triadunit(year,1) +triadunit(year,2) + triadunit(year,3))/3; 
         tn=tn+364-dfs;
         tu=1;
         SavingPY(year)= yearcharge(year)-yearchargewB(year)+triadcost(year);
         year = year + 1;
     end
-
+     
+      if rem((n)/365,1) == 0 || rem((n)/182,1) == 0
+          waitbar((newCap-Cap(n,c))/ (newCap-endlifeval));
+      end
+      
       if n == runlen*365
         break
-      end
+      end      
 end
 runtime=toc;
-DaychargewB= (sum(HHchargewB')./100)'; %Daily Cost in Pounds
-Daycharge= (sum(HHcharge')./100)'; %Daily Cost in Pounds
-triadtotcost=sum(triadcost(1:year-2));
-lifecharge = sum(Daycharge);
-lifechargewB = sum(DaychargewB);
-Saving = lifecharge-lifechargewB+triadtotcost;
+% DaychargewB= (sum(HHchargewB')./100)'; %Daily Cost in Pounds
+% Daycharge= (sum(HHcharge')./100)'; %Daily Cost in Pounds
+% triadtotcost=sum(triadcost(1:year));
+% lifecharge = sum(Daycharge);
+% lifechargewB = sum(DaychargewB);
+% Saving = lifecharge-lifechargewB+triadtotcost;
+
+cumSavings(n:size(cumSavings,1),:)=[];
+tt=1;
+for t = 1:365:n-1
+    cumSavyear(tt)=cumSavings(t);
+%     yearT(tt)=tt-1;
+    tt=tt+1;
+end
+% yearT(:,(tt:size(cumSavyear,2)))=[];
+cumSavyear(:,(tt:size(cumSavyear,2)))=[];
+Saving = cumSavyear(1,size(cumSavyear,2));
+if isempty(pbtime)
+    pbtime = 0;
+end
 pbtime = pbtime/365;
 close(h)
+disp(['Battery Specifications - P: ', num2str(maxPower), ' C: ', num2str(newCap)]);
 disp(['Total Saved P ' num2str(Saving)]);
 disp(['Payback Period: ' num2str(pbtime) ' Years']);
 disp(['Years: ' num2str(n/365)]);
@@ -266,13 +299,7 @@ disp(['Cycles: ' num2str(cycle)]);
 disp(['Run Time: ' num2str(runtime) ' Seconds']);
 
 
-cumSavings(n:size(cumSavings,1),:)=[];
-tt=1;
-for t = 1:365:n-1
-    cumSavyear(tt)=cumSavings(t);
-    tt=tt+1;
-end
-cumSavyear(:,(tt:size(cumSavyear,2)))=[];
+
 
 % plot((1:365:n-1)/365,cumSavyear);
 % title('Payback Period For Battery')

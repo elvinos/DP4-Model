@@ -27,15 +27,16 @@ tic
 % for newCap = minSize:step:maxSize
 parfor s = 1:samples
 [cumSavyear,Year(s),Saving(s),pbtime(s),SavingPY(s,:)] = datalivefunc(fileName,UFCost(s), newCap(s), maxPower(s),runlen);
+
 totsaving(s)= cumSavyear(1,size(cumSavyear,2));
 %waitbar(s/(samples)); % Non Parallel
-% s= s+1; % Non Parallel
-hh.iterate(1); % Parallel
+hh.iterate(1);
 set( get(findobj(hh,'type','axes'),'title'), 'string',['Sample ', num2str(s), ' of ', num2str(samples) ])
+% s= s+1;
 end
-
 CashFlow=horzcat(-UFCost,SavingPY);
 Rate=0.09;
+
 close(hh)
 toc
 
