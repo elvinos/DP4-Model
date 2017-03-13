@@ -93,8 +93,8 @@ end
 monthdata(1,:)=(sum(mdata)+monthdata(1,:))/(size(mdata,1)+1);
 livedatademcols = livedatadem(:);
 
-%% Red Rate Plots
-wklivedatausered=wklivedatause(:,1020:1140);
+
+
 
 %% Create Plots
 for plsct = 3:3
@@ -176,6 +176,18 @@ xlabel('Time Of Day/Hours')
 ylabel('Energy Demand/kW')
 title({'Plot of Energy Demand Averaged For Different Months', 'in the Year (Weekdays Only)'})
 
-
+%% Red Rate Plots
+wklivedatausered=wklivedatause(:,1020:1140);
+figure()
+maxredPDem=max(max(wklivedatausered*30*2))
+maxredPUse=max(sum(wklivedatausered,2))
+mnlivedatausered=monthdata(:,1020:1140);
+plot((1020:1140)/60,mnlivedatausered*30*2);
+disp
+xlim([0 1440/60]);
+legend(acMonth)
+xlabel('Time Of Red Period /Hours')
+ylabel('Energy Demand/kW')
+title({'Plot of Red Periods Demand For', 'in the Year'})
 
 

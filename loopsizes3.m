@@ -40,8 +40,9 @@ close(hh)
 toc
 
 sizeRange=newCap;
-
-scatter(sizeRange,totsaving)
+[sorttotsaving,sortingtotI] = sort(pbtime,'descend');
+% scatter(sizeRange,totsaving)
+scatter(sizeRange,sorttotsaving(1:30))
 title('Battery Size vs Total Saving')
 xlabel('Battery Size / kWh')
 ylabel('Total Saving')
@@ -56,7 +57,9 @@ end
 labelpoints(sizeRange,totsaving,Labels1,'NE');
 
 figure()
-scatter( sizeRange, (pbtime))
+[sortpbtime,sortingI] = sort(pbtime,'ascend');
+% scatter( sizeRange, (pbtime))
+scatter( sizeRange, sortpbtime(1:30))
 title('Payback Period for Battery Based on Size pkWh')
 xlabel('Battery Size/ kWh')
 ylabel('Payback Time / Years')

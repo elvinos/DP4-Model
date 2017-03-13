@@ -93,12 +93,7 @@ end
 monthdata(1,:)=(sum(mdata)+monthdata(1,:))/(size(mdata,1)+1);
 livedatademcols = livedatadem(:);
 
-%% Red Rate Plots
-wklivedatausered=wklivedatause(:,1020:1140);
-figure()
-maxredPDem=max(max(wklivedatausered*30*2))
-maxredPUse=max(sum(wklivedatausered,2))
-plot((1020:1140)/60,wklivedatausered);
+
 
 
 %% Create Plots
@@ -181,6 +176,22 @@ xlabel('Time Of Day/Hours')
 ylabel('Energy Demand/kW')
 title({'Plot of Energy Demand Averaged For Different Months', 'in the Year (Weekdays Only)'})
 
-
-
+%% Red Rate Plots
+wklivedatausered=wklivedatause(:,1020:1140);
+figure()
+maxredPDem=max(max(wklivedatausered*30*2));
+maxredPUse=max(sum(wklivedatausered,2));
+meanredPDem=mean(mean(wklivedatausered*30*2));
+meanredPUse=mean(sum(wklivedatausered,2));
+mnlivedatausered=monthdata(:,1020:1140);
+plot((1020:1140)/60,mnlivedatausered*30*2);
+xlim([1020/60 1140/60]);
+legend(acMonth)
+xlabel('Time Of Red Period /Hours')
+ylabel('Energy Demand/kW')
+title({'Plot of Red Periods Demand For', 'Different Months in the Year'})
+disp(['Max Power Demand in Red Period: ', num2str(maxredPDem), ' kW']);
+disp(['Max Power Useage in Red Period: ', num2str(maxredPUse), ' kWh']);
+disp(['Mean Power Demand in Red Period: ', num2str(meanredPDem), ' kW']);
+disp(['Mean Power Useage in Red Period: ', num2str(meanredPUse), ' kWh']);
 
