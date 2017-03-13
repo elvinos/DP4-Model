@@ -40,9 +40,8 @@ close(hh)
 toc
 
 sizeRange=newCap;
-[sorttotsaving,sortingtotI] = sort(pbtime,'descend');
-% scatter(sizeRange,totsaving)
-scatter(sizeRange,sorttotsaving(1:30))
+
+scatter(sizeRange,totsaving)
 title('Battery Size vs Total Saving')
 xlabel('Battery Size / kWh')
 ylabel('Total Saving')
@@ -57,9 +56,9 @@ end
 labelpoints(sizeRange,totsaving,Labels1,'NE');
 
 figure()
-[sortpbtime,sortingI] = sort(pbtime,'ascend');
-% scatter( sizeRange, (pbtime))
-scatter( sizeRange, sortpbtime(1:30))
+
+scatter( sizeRange, (pbtime))
+
 title('Payback Period for Battery Based on Size pkWh')
 xlabel('Battery Size/ kWh')
 ylabel('Payback Time / Years')
@@ -74,6 +73,37 @@ disp(['Best PB Time: ', num2str(minPBtime), ' P:' num2str(maxPower(Inpb)),  'C: 
 disp(['Maximum Savings: ', num2str(maxSave), ' P:' num2str(maxPower(Inms)),  'C: ' num2str(newCap(Inms))]);
 disp(['Max Net Present Value: ', num2str(maxNpv), ' P:' num2str(maxPower(Inmn)),  'C: ' num2str(newCap(Inmn))]);
 
+range=30;
+if samples < range
+    range=samples;
+end
+[sorttotsaving,sortingtotI] = sort(pbtime,'descend');
+[sortpbtime,sortingI] = sort(pbtime,'ascend');
+sizeR2=sizeRange(sortingtotI)';
+sizeR3=sizeRange(sortingI)';
+maxPower2=maxPower(sortingtotI);
+maxPower3=maxPower(sortingI);
+figure()
+scatter(sizeR2(1:range),sorttotsaving(1:range))
+title('Battery Size vs Total Saving')
+xlabel('Battery Size / kWh')
+ylabel('Total Saving')
+hold on
+
+
+for ss=1:range
+ Labels3{ss}=strcat('P: ', num2str(maxPower2(ss,1)));
+ Labels4{ss} = strcat('P: ', num2str(maxPower3(ss,1)), ' PB: ', num2str(sortpbtime(ss)));
+end
+labelpoints(sizeR2(1:range),sorttotsaving(1:range),Labels3,'NE');
+
+figure()
+scatter( sizeR3(1:range), sortpbtime(1:range))
+title('Payback Period for Battery Based on Size pkWh')
+xlabel('Battery Size/ kWh')
+ylabel('Payback Time / Years')
+
+labelpoints(sizeR3(1:range), sortpbtime(1:range),Labels4,'NE');
 % profile off
 %
 % profile viewer
