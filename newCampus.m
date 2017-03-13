@@ -41,14 +41,14 @@ labData2= vertcat(labData(1,:),labData(nnn2+2:rowsData,:), labData(3:nnn2+2,:));
 
 sss= 1;
 while string(labData2(2,2)) ~= string(senateData(2,2))
-    disp(cellstr(labData2(2,2)));
+%     disp(cellstr(labData2(2,2)));
     ss=nnn2+2-sss;
     labData2= vertcat(labData(1,:),labData(ss:rowsData,:), labData(3:ss,:));
     sss=sss+1;
 end
 sss=1;
 while string(hallData2(2,2)) ~= string(senateData(2,2))
-    disp(cellstr(hallData2(2,2)));
+%     disp(cellstr(hallData2(2,2)));
     ss=nn+2-sss;
     hallData2= vertcat(hallData(1,:),hallData(ss:rowsData,:), hallData(3:ss,:));
     sss=sss+1;
@@ -58,32 +58,37 @@ end
 hallDataMat = cell2mat(hallData2(2:rowsData2,4:colsData));
 labDataMat =cell2mat(labData(2:rowsData,4:colsData));
 
+Data = senateDataMat.*7.9+labDataMat.*4+hallDataMat.*7.6;
+Datacell = num2cell(Data);
+datatot= num2cell(sum(Data,2));
+sendat= senateData(2:size(senateData,1),1:2);
+Dataexp = horzcat(sendat,datatot,Datacell);
+Dataexp2 = vertcat(senateData(1,:),Dataexp);
+datacols1=Dataexp2(1:366,1:3);
+datacols2=Dataexp2(1:366,4:colsData);
 
-Data = senateDataMat.*8+labDataMat.*4+hallDataMat.*10;
+%% WRITE FILE - DOES NOT WORK Copy and Paste Values
 
-    
+% filename = 'newCampus1.csv';
+% fid = fopen(filename, 'w') ;
+% fprintf(fid, '%f %f %f\n', datacols1{:,:}) ;
+% % fprintf(fid, '%s\n', Dataexp{1,end}) ;
+% fclose(fid) ;
+% dlmwrite(filename, datacols2(:,:), '-append') ;
+% filename2 = 'newCampus2.csv';
+% csvwrite(filename2,Dataexp2)
+% xlswrite(filename,Dataexp2(1:2,3:51))
 %% Test Vertcat For Data Func
-g=3;
-senateData1=senateData(2:rowsData,:);
+% g=2;
+% Data1=Data;
+% rowsData= size(Data,1);
+% colsData= size(Data,2);
 
-for n=1:2
-for gg= g:g+5
-    nsav=size(senateData1,1); % TEST
-    senateData1 = vertcat(senateData1,senateData(gg:rowsData,:),senateData(g:gg,:));
-%     disp(cellstr(senateData1(nsav,2)));
-end
- senateData1 = vertcat(senateData1,senateData(2:rowsData,:));
-end
-
-for n= 2:size(senateData1,1)-1
-    if isequal(cellstr(senateData1(n,2)),cellstr(senateData1(n+1,2)))
-        disp([cellstr(senateData1(n,2)),cellstr(senateData1(n+1,2))]);
-        disp([cellstr(senateData1(n,2)),cellstr(senateData1(n+1,2))]);
-        disp(num2str(n));
-    end
-end
-
-
-
-senateData2= senateData1(:,1:2);
+% for n=1:2
+% for gg= g:g+5
+%     nsav=size(Data,1); % TEST
+%     Data = vertcat(Data,Data1(gg:rowsData,:),Data1(g:gg,:));
+% end
+%  Data = vertcat(Data,Data1);
+% end
 toc

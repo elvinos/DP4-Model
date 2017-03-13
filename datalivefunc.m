@@ -14,8 +14,7 @@ liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
 rowsDataSelec = size(liveDataSelc,1);
 colsDataSelec = size(liveDataSelc,2);
 liveDataSelc1= liveDataSelc;
-
-liveDataSelc1= vertcat(liveDataSelc(2:rowsDataSelec,:),liveDataSelc(2,:),liveDataSelc(3:rowsDataSelec,:),liveDataSelc(2:3,:),liveDataSelc(4:rowsDataSelec,:),liveDataSelc(2:4,:),liveDataSelc(5:rowsDataSelec,:),liveDataSelc(2:5,:),liveDataSelc(6:rowsDataSelec,:),liveDataSelc(2:6,:),liveDataSelc(7:rowsDataSelec,:),liveDataSelc(2:7,:),liveDataSelc);
+% liveDataSelc1= vertcat(liveDataSelc(2:rowsDataSelec,:),liveDataSelc(2,:),liveDataSelc(3:rowsDataSelec,:),liveDataSelc(2:3,:),liveDataSelc(4:rowsDataSelec,:),liveDataSelc(2:4,:),liveDataSelc(5:rowsDataSelec,:),liveDataSelc(2:5,:),liveDataSelc(6:rowsDataSelec,:),liveDataSelc(2:6,:),liveDataSelc(7:rowsDataSelec,:),liveDataSelc(2:7,:),liveDataSelc);
 
 for c = 1:1:colsDataSelec
     if colsDataSelec > 48
@@ -26,27 +25,20 @@ for c = 1:1:colsDataSelec
 end
 
 loops= runlen; % Guess Number of years to speed up Process
-for j = 1:ceil(loops/7)
-    liveDataSelc = vertcat(liveDataSelc,liveDataSelc1);
- if colsDataSelec == 48
-    liveDataDem=liveDataSelc;
- else
-     liveDataDem = 2*29.995*liveDataSelc;
- end
-end
 
-%   for n=1:ceil(loops/7)
-%         for gg= 2:7
-%              liveDataSelc = vertcat(liveDataSelc,liveDataSelc1(gg:rowsDataSelec,:),liveDataSelc1(2:gg,:));
-%         end
-%          liveDataSelc = vertcat(liveDataSelc,liveDataSelc1);
-%   end
-%   
-%   if colsDataSelec == 48
-%      liveDataDem=liveDataSelc;
-%   else
-%      liveDataDem = 2*29.995*liveDataSelc;
-%   end
+  for n=1:ceil(loops/7)
+        for gg= 2:7
+         liveDataSelc = vertcat(liveDataSelc,liveDataSelc1(gg:rowsDataSelec,:),liveDataSelc1(2:gg,:));
+        end
+         liveDataSelc = vertcat(liveDataSelc,liveDataSelc1);
+  end
+  
+  if colsDataSelec == 48
+     liveDataDem=liveDataSelc;
+  else
+     liveDataDem = 2*29.995*liveDataSelc;
+  end
+
 
 % Powerwall Calculation
 % UFCost = 86330;
@@ -105,7 +97,14 @@ cumSavings(1)= -UFCost;
 triadcost=zeros(1,loops);
 triadcost(1)=0;
 % Triad Information:
-strtdate= datenum(char(sdate),'dd/mm/yyyy',2000);
+sdatechar=char(sdate);
+sdatechar(sdatechar=='''') = [];
+  try
+    strtdate= datenum(sdatechar,'dd/mm/yyyy',2000);
+  catch 
+     strtdate= datenum(sdatechar);
+  end
+  
 t1='04-Dec-2014';
 t2='19-Jan-2015';
 t3='02-Feb-2015';

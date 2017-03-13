@@ -95,11 +95,6 @@ livedatademcols = livedatadem(:);
 
 %% Red Rate Plots
 wklivedatausered=wklivedatause(:,1020:1140);
-figure()
-maxredPDem=max(max(wklivedatausered*30*2))
-maxredPUse=max(sum(wklivedatausered,2))
-plot((1020:1140)/60,wklivedatausered);
-
 
 %% Create Plots
 for plsct = 3:3

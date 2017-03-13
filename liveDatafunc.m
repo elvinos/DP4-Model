@@ -4,7 +4,7 @@ function [livedatause, DataMatmm30, DataMat,sdate] = liveDatafunc(fileName)
 % Data
 
     Data=senateEDD1(fileName);
-    sdate=string(Data(2,1));
+    sdate=char(Data(2,1));
     rowsData= size(Data,1);
     colsData= size(Data,2);
     DataMat = cell2mat(Data(2:rowsData,4:colsData));
@@ -55,11 +55,11 @@ for n=1:rowsDataMat
             for m = 1:30
                 mm = (c-1)*30 + m;
                 DataMatmm(n,mm)=grad(n,c)*mm+const(n,c); % kWh Usage Per Half Hour with Minute by Minute Data Segments
-                DataMatmm30(n,mm)=DataMatmm(n,mm)/29.995; % kWh Useage Per Minute 29.995 used to give better fit.
+                DataMatmm30(n,mm)=DataMatmm(n,mm)/30; % kWh Useage Per Minute 29.995 used to give better fit.
                 % Use a Normally Distributed Random Number to show Change in
                 % Usegae Minute by Minute
-            livedatause(n,mm) = n2(n,m)/30;
-            livedatadem(n,mm) = 2*n2(n,m);
+                livedatause(n,mm) = n2(n,m)/30;
+                livedatadem(n,mm) = 2*n2(n,m);
             end
     end
 end

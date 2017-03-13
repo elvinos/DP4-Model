@@ -6,12 +6,12 @@ close all force
 % profile on
 
 %% Powerpack Calculation
+ppFileName = 'Powerpackprice2.csv';
+[maxPower,newCap,UFCost] = powerpackprice(ppFileName);
 
-[maxPower,newCap,UFCost] = powerpackprice();
-
-fileName = 'HallElecData.csv';
+fileName = 'newCampus1.csv';
 samples=size(maxPower,1);
-runlen=50;
+runlen=25;
 
 ufcost=zeros(1,samples);
 sizeRange=zeros(1,samples);

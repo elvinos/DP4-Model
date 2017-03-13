@@ -1,12 +1,4 @@
-clear all
-close all force
-clc
-
-fileName='newCampus.csv';
-UFCost=90000;
-newCap= 190;
-maxPower=100;
-runlen=40;
+function [cumSavyear,year,Saving,pbtime,SavingPY] = datalivefunc(fileName,UFCost, newCap, maxPower,runlen)
 %% Variables
 % set runlen to 0 for running battery until failure
 % Rates in Pence
@@ -14,7 +6,7 @@ UnitRate = 6.832;
 rateR=24.41;
 rateA=0.287;
 rateG=0.161;
-[livedatause,DataMatmm30,DataMat,sdate] = liveDatafunc(fileName);
+[livedatause,DataMatmm30,DataMat,sdate] =liveDatafunc(fileName);
 
 %% Battery Calculator
 liveDataSelc= livedatause(1:365,:);
@@ -22,7 +14,6 @@ liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
 rowsDataSelec = size(liveDataSelc,1);
 colsDataSelec = size(liveDataSelc,2);
 liveDataSelc1= liveDataSelc;
-
 % liveDataSelc1= vertcat(liveDataSelc(2:rowsDataSelec,:),liveDataSelc(2,:),liveDataSelc(3:rowsDataSelec,:),liveDataSelc(2:3,:),liveDataSelc(4:rowsDataSelec,:),liveDataSelc(2:4,:),liveDataSelc(5:rowsDataSelec,:),liveDataSelc(2:5,:),liveDataSelc(6:rowsDataSelec,:),liveDataSelc(2:6,:),liveDataSelc(7:rowsDataSelec,:),liveDataSelc(2:7,:),liveDataSelc);
 
 for c = 1:1:colsDataSelec
@@ -34,17 +25,10 @@ for c = 1:1:colsDataSelec
 end
 
 loops= runlen; % Guess Number of years to speed up Process
-% for j = 1:ceil(loops/7)
-% liveDataSelc = vertcat(liveDataSelc,liveDataSelc1);
-%  if colsDataSelec == 48
-%     liveDataDem=liveDataSelc;
-%  else
-%      liveDataDem = 2*29.995*liveDataSelc;
-%  end
-% end
+
   for n=1:ceil(loops/7)
         for gg= 2:7
-             liveDataSelc = vertcat(liveDataSelc,liveDataSelc1(gg:rowsDataSelec,:),liveDataSelc1(2:gg,:));
+         liveDataSelc = vertcat(liveDataSelc,liveDataSelc1(gg:rowsDataSelec,:),liveDataSelc1(2:gg,:));
         end
          liveDataSelc = vertcat(liveDataSelc,liveDataSelc1);
   end
@@ -54,6 +38,7 @@ loops= runlen; % Guess Number of years to speed up Process
   else
      liveDataDem = 2*29.995*liveDataSelc;
   end
+
 
 % Powerwall Calculation
 % UFCost = 86330;
@@ -118,10 +103,11 @@ sdatechar=char(sdate);
   catch 
      strtdate= datenum(sdatechar);
   end
-
+  
 t1='04-Dec-2014';
 t2='19-Jan-2015';
 t3='02-Feb-2015';
+
 if datenum(t1) < strtdate
     [Y,M,D] = datevec(strtdate);
     [Y1,M1,D1] = datevec(t1);
@@ -131,6 +117,7 @@ if datenum(t1) < strtdate
     t2 = datestr(datenum(Y+1,M2,D2));
     t3 = datestr(datenum(Y+1,M3,D3)); 
 end
+
 triadrate= 33.55; % £ per KW
 nn=1;
 tu=1;
@@ -323,3 +310,5 @@ disp(['Run Time: ' num2str(runtime) ' Seconds']);
 % title('Payback Period For Battery')
 % xlabel('Time / Years')
 % ylabel('Cumlative Savings / £')
+
+end
