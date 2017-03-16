@@ -1,4 +1,4 @@
-function [cumSavyear,year,Saving,pbtime,SavingPY,meanDODwk] = datalivefunc(fileName,UFCost, newCap, maxPower,runlen)
+function [cumSavyear,year,Saving,pbtime,SavingPY,DoDmean] = datalivecondfunc(liveDataSelc,sdate,UFCost, newCap, maxPower,runlen)
 
 %% Variables
 % set runlen to 0 for running battery until failure
@@ -8,11 +8,11 @@ UnitRate = 6.832;
 rateR=24.41;
 rateA=0.287;
 rateG=0.161;
-[livedatause,DataMatmm30,DataMat,sdate] =liveDatafunc(fileName);
+% [livedatause,DataMatmm30,DataMat,sdate] =liveDatafunc(fileName);
 
 %% Battery Calculator
-liveDataSelc= livedatause(1:365,:);
-liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
+% % liveDataSelc= livedatause(1:365,:);
+% liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
 rowsDataSelec = size(liveDataSelc,1);
 colsDataSelec = size(liveDataSelc,2);
 % liveDataSelc1= liveDataSelc;
@@ -28,23 +28,11 @@ end
 
 loops= runlen; % Guess Number of years to speed up Process
 
-liveDataSelc1= vertcat(liveDataSelc(2:rowsDataSelec,:),liveDataSelc(2,:),liveDataSelc(3:rowsDataSelec,:),liveDataSelc(2:3,:),liveDataSelc(4:rowsDataSelec,:),liveDataSelc(2:4,:),liveDataSelc(5:rowsDataSelec,:),liveDataSelc(2:5,:),liveDataSelc(6:rowsDataSelec,:),liveDataSelc(2:6,:),liveDataSelc(7:rowsDataSelec,:),liveDataSelc(2:7,:),liveDataSelc);
-  for n=1:ceil(loops/7)
-
-%         for gg= 2:7
-%
-%             liveDataSelc = vertcat(liveDataSelc,liveDataSelc1(gg:rowsDataSelec,:),liveDataSelc1(2:gg,:));
-%
-%         end
-            liveDataSelc = vertcat(liveDataSelc,liveDataSelc1);
-  end
-
   if colsDataSelec == 48
      liveDataDem=liveDataSelc;
   else
      liveDataDem = 2*30*liveDataSelc;
   end
-
 
 % Powerwall Calculation
 % UFCost = 86330;
@@ -93,21 +81,21 @@ chrg = 0;
 pbtime=[];
 
  % Guess Number of years to speed up Process
-batteryuse = zeros(rowsDataSelec*loops,colsDataSelec);
-Rtot = zeros(rowsDataSelec*loops,colsDataSelec);
-Atot = zeros(rowsDataSelec*loops,colsDataSelec);
-Gtot = zeros(rowsDataSelec*loops,colsDataSelec);
-RtotwB = zeros(rowsDataSelec*loops,colsDataSelec);
-AtotwB = zeros(rowsDataSelec*loops,colsDataSelec);
-GtotwB = zeros(rowsDataSelec*loops,colsDataSelec);
-HHcharge = zeros(rowsDataSelec*loops,colsDataSelec);
-HHchargewB = zeros(rowsDataSelec*loops,colsDataSelec);
-overpower =zeros(rowsDataSelec*loops,colsDataSelec);
-Cap=zeros(rowsDataSelec*loops,colsDataSelec);
-wkbatuse=zeros(rowsDataSelec*loops,colsDataSelec); %OFTEN UNUSED
-batchargewk=zeros(rowsDataSelec*loops,colsDataSelec); %% NEW
-batcharge=zeros(rowsDataSelec*loops,colsDataSelec);
-cumSavings=zeros(rowsDataSelec*loops,1);
+batteryuse = zeros(rowsDataSelec,colsDataSelec);
+Rtot = zeros(rowsDataSelec,colsDataSelec);
+Atot = zeros(rowsDataSelec,colsDataSelec);
+Gtot = zeros(rowsDataSelec,colsDataSelec);
+RtotwB = zeros(rowsDataSelec,colsDataSelec);
+AtotwB = zeros(rowsDataSelec,colsDataSelec);
+GtotwB = zeros(rowsDataSelec,colsDataSelec);
+HHcharge = zeros(rowsDataSelec,colsDataSelec);
+HHchargewB = zeros(rowsDataSelec,colsDataSelec);
+overpower =zeros(rowsDataSelec,colsDataSelec);
+Cap=zeros(rowsDataSelec,colsDataSelec);
+wkbatuse=zeros(rowsDataSelec,colsDataSelec);
+batcharge=zeros(rowsDataSelec,colsDataSelec);
+cumSavings=zeros(rowsDataSelec,1);
+batchargewk=zeros(rowsDataSelec,colsDataSelec); %% NEW
 yearchargewB = zeros(1,loops);
 yearcharge = zeros(1,loops);
 SavingPY= zeros(1,loops);
@@ -146,8 +134,8 @@ dfs=0;
 tn=zeros(loops,3);
 triadunit=zeros(loops,3);
 batful=zeros(1,loops);
-daydep=zeros(rowsDataSelec*loops,1);
-daydepwk=zeros(rowsDataSelec*loops,1);
+daydep=zeros(rowsDataSelec,1);
+daydepwk=zeros(rowsDataSelec,1);
 
 % h = waitbar(0,'Please wait...');
 
@@ -332,9 +320,9 @@ batchargewk(wkday:size(batchargewk,1),:)=[];
 daydepsumwk=sum(daydepwk,2);
 batchargebdwk=batchargewk(:,1020);
 DODwk=abs((daydepsumwk./batchargebdwk))*100;
-Meanddodwk=mean(DODwk);
+DoDmean=mean(DODwk);
 
-disp(['Mean DODwk: ',num2str(Meanddodwk)]);
+disp(['Mean DoD: ',num2str(DoDmean),'%']);
 disp(['Battery Specifications - P: ', num2str(maxPower), ' C: ', num2str(newCap)]);
 disp(['Total Saved P ' num2str(Saving)]);
 disp(['Payback Period: ' num2str(pbtime) ' Years']);
@@ -342,19 +330,6 @@ disp(['Years: ' num2str(n/365)]);
 disp(['Cycles: ' num2str(cycle)]);
 disp(['Run Time: ' num2str(runtime) ' Seconds']);
 
-% daydep(n:size(daydep,1),:)=[];
-% Cap(n:size(Cap,1),:)=[];
-% daydepsum=sum(daydep,2);
-% batchargebd=Cap(:,1020);
-% DOD=abs((daydepsum./batchargebd))*100;
-% Meanddod=mean(DOD);
-% disp(['Mean DOD: ',num2str(Meanddod)]);
-
-
-
-% profile off
-%
-% profile viewer
 
 
 

@@ -1,15 +1,15 @@
 clear all
 close all force
 clc
-
-profile clear
-profile on
+% 
+% profile clear
+% profile on
 
 fileName='newCampus.csv';	
-UFCost=46950;
-newCap= 100;
-maxPower=50;
-runlen=50;
+UFCost=840320;
+newCap= 2090;
+maxPower=1100;
+runlen=60;
 %% Variables
 % set runlen to 0 for running battery until failure
 % Rates in Pence
@@ -112,7 +112,8 @@ HHcharge = zeros(rowsDataSelec*loops,colsDataSelec);
 HHchargewB = zeros(rowsDataSelec*loops,colsDataSelec);
 overpower =zeros(rowsDataSelec*loops,colsDataSelec);
 Cap=zeros(rowsDataSelec*loops,colsDataSelec);
-wkbatuse=zeros(rowsDataSelec*loops,colsDataSelec);
+wkbatuse=zeros(rowsDataSelec*loops,colsDataSelec); %OFTEN UNUSED
+batchargewk=zeros(rowsDataSelec*loops,colsDataSelec); %% NEW 
 batcharge=zeros(rowsDataSelec*loops,colsDataSelec);
 cumSavings=zeros(rowsDataSelec*loops,1);
 yearchargewB = zeros(1,loops);
@@ -153,7 +154,8 @@ dfs=0;
 tn=zeros(loops,3);
 triadunit=zeros(loops,3);
 batful=zeros(1,loops);
-
+daydep=zeros(rowsDataSelec*loops,1);
+daydepwk=zeros(rowsDataSelec*loops,1);
 
 h = waitbar(0,'Please wait...');
 tic
@@ -212,7 +214,7 @@ while curCap > endlifeval
             else
                 batteryuse(n,c)= -overpower(n,c);
             end
-
+             daydep(n,c)=batteryuse(n,c); %%% NEW
             dep = dep+batteryuse(n,c);
             Rtot(n,c)= liveDataSelc(n,c);
             RtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
@@ -253,9 +255,13 @@ while curCap > endlifeval
              HHchargewB(n,c) = (liveDataSelc(n,c)+batteryuse(n,c))*(DUoSrate+UnitRate);
          end
 
-%         if  day==1
-%             wkbatuse(wkday,c) = batteryuse(n,c);
-%         end
+        if  day==1
+            wkbatuse(wkday,c) = batteryuse(n,c);
+            batchargewk(wkday,c) = Cap(n,c);
+            if batteryuse(n,c) < 0
+            daydepwk(wkday,c)=batteryuse(n,c);
+            end
+        end
 
         HHcharge(n,c) = (liveDataSelc(n,c))*(DUoSrate+UnitRate);
 
@@ -268,6 +274,7 @@ while curCap > endlifeval
             triadunit(year,tu)= liveDataDem(n,c);
             tu= tu+1;
         end
+        
 
     end
 
@@ -286,8 +293,8 @@ while curCap > endlifeval
         end
 
     if rem((n)/365,1) == 0
-        yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec))');
-        yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec))');
+        yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec))')./100;
+        yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec))')./100;
          % For Triads 
          % TAKES TRIAD Of Previous Year and applies equally over the next year.
         tn(year+1,:)=tn(year,:)+364-dfs; % 364 so always falls on the same day % dfs if needing to adjust
@@ -336,9 +343,28 @@ disp(['Years: ' num2str(n/365)]);
 disp(['Cycles: ' num2str(cycle)]);
 disp(['Run Time: ' num2str(runtime) ' Seconds']);
 
-profile off
+daydep(n:size(daydep,1),:)=[];
+Cap(n:size(Cap,1),:)=[];
+daydepwk(wkday:size(daydepwk,1),:)=[];
+batchargewk(wkday:size(batchargewk,1),:)=[];
 
-profile viewer
+daydepsum=sum(daydep,2);
+batchargebd=Cap(:,1020);
+DOD=abs((daydepsum./batchargebd))*100;
+Meanddod=mean(DOD);
+
+daydepsumwk=sum(daydepwk,2);
+batchargebdwk=batchargewk(:,1020);
+DODwk=abs((daydepsumwk./batchargebdwk))*100;
+Meanddodwk=mean(DODwk);
+
+disp(['Mean DOD: ',num2str(Meanddod)]);
+disp(['Mean DODwk: ',num2str(Meanddodwk)]);
+
+
+% profile off
+% 
+% profile viewer
 
 
 

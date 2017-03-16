@@ -1,9 +1,9 @@
 clear all
 close all force
 clc
-
-profile clear
-profile on
+% 
+% profile clear
+% profile on
 
 fileName='newCampus.csv';	
 UFCost=46950;
@@ -24,9 +24,9 @@ liveDataSelc= livedatause(1:365,:);
 liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
 rowsDataSelec = size(liveDataSelc,1);
 colsDataSelec = size(liveDataSelc,2);
-liveDataSelc1= liveDataSelc;
+% liveDataSelc1= liveDataSelc;
 
-
+Time=zeros(1,colsDataSelec);
 for c = 1:1:colsDataSelec
     if colsDataSelec > 48
         Time(:,c) = c; %Minutes
@@ -35,7 +35,8 @@ for c = 1:1:colsDataSelec
     end
 end
 
-loops= runlen; 
+loops= runlen; % Guess Number of years to speed up Process
+
 liveDataSelc1= vertcat(liveDataSelc(2:rowsDataSelec,:),liveDataSelc(2,:),liveDataSelc(3:rowsDataSelec,:),liveDataSelc(2:3,:),liveDataSelc(4:rowsDataSelec,:),liveDataSelc(2:4,:),liveDataSelc(5:rowsDataSelec,:),liveDataSelc(2:5,:),liveDataSelc(6:rowsDataSelec,:),liveDataSelc(2:6,:),liveDataSelc(7:rowsDataSelec,:),liveDataSelc(2:7,:),liveDataSelc);
   for n=1:ceil(loops/7)
       
@@ -70,7 +71,8 @@ maxCharge = ((1-doD)/2+doD)*curCap;
 minCharge =((1-doD)/2)*curCap;
 batCharge = maxCharge;
 
-ChargeRate = maxPower*0.3; % Set in kWh per halfHour
+% Set Charging rate based on 30% on max total power
+ChargeRate = maxPower*0.2*2; % Set in kWh per halfHour
 if ChargeRate*24 < maxCharge
     disp('Charge Rate Too Slow')
 end
@@ -110,7 +112,8 @@ HHcharge = zeros(rowsDataSelec*loops,colsDataSelec);
 HHchargewB = zeros(rowsDataSelec*loops,colsDataSelec);
 overpower =zeros(rowsDataSelec*loops,colsDataSelec);
 Cap=zeros(rowsDataSelec*loops,colsDataSelec);
-wkbatuse=zeros(rowsDataSelec*loops,colsDataSelec);
+wkbatuse=zeros(rowsDataSelec*loops,colsDataSelec); %OFTEN UNUSED
+batchargewk=zeros(rowsDataSelec*loops,colsDataSelec); %% NEW 
 batcharge=zeros(rowsDataSelec*loops,colsDataSelec);
 cumSavings=zeros(rowsDataSelec*loops,1);
 yearchargewB = zeros(1,loops);
@@ -121,7 +124,7 @@ cumSavings(1)= -UFCost;
 triadunitsave=zeros(loops,3);
 triadcostsave=zeros(1,loops);
 triadcost=zeros(1,loops);
-triadcost(1)=0; %% Do I Need this? 
+
 % Triad Information:
 sdatechar=char(sdate);
 sdatechar(sdatechar=='''') = [];
@@ -134,6 +137,7 @@ sdatechar(sdatechar=='''') = [];
 t1='04-Dec-2014';
 t2='19-Jan-2015';
 t3='02-Feb-2015';
+
 if datenum(t1) < strtdate
     [Y,M,D] = datevec(strtdate);
     [Y1,M1,D1] = datevec(t1);
@@ -150,7 +154,8 @@ dfs=0;
 tn=zeros(loops,3);
 triadunit=zeros(loops,3);
 batful=zeros(1,loops);
-
+daydep=zeros(rowsDataSelec*loops,1);
+daydepwk=zeros(rowsDataSelec*loops,1);
 
 h = waitbar(0,'Please wait...');
 tic
@@ -182,7 +187,7 @@ while curCap > endlifeval
       batcharge(n,c)= batCharge;
         if  rem((n+6)/7,1) == 0  ||  rem((n)/7,1) == 0
             day=2;
-            if 17*60 < Time(1,c) && Time(1,c) <= 19.5*60
+            if 990 < Time(1,c) && Time(1,c) <= 1170
               DUoSrate = rateA;
             else
               DUoSrate = rateG;
@@ -191,7 +196,7 @@ while curCap > endlifeval
             day=1;
             if  Time(1,c) <= 1140 && Time(1,c) > 1020
                 DUoSrate = rateR;
-            elseif 48 < Time(1,c) && Time(1,c) <= 17*60 || 19*60 < Time(1,c) && Time(1,c) <= 21.5*60
+            elseif 480 < Time(1,c) && Time(1,c) <= 1020 || 1140 < Time(1,c) && Time(1,c) <= 1290
                 DUoSrate = rateA;
             else
                 DUoSrate = rateG;
@@ -209,7 +214,7 @@ while curCap > endlifeval
             else
                 batteryuse(n,c)= -overpower(n,c);
             end
-
+             daydep(n,c)=batteryuse(n,c); %%% NEW
             dep = dep+batteryuse(n,c);
             Rtot(n,c)= liveDataSelc(n,c);
             RtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
@@ -224,9 +229,9 @@ while curCap > endlifeval
                   batteryuse(n,c) = ChargeRate;
                 end
             end
-            if  batteryuse(n,c)== 0
-                batful(n)= 1;
-            end
+%             if  batteryuse(n,c)== 0
+%                 batful(n)= 1;
+%             end
             chrg= chrg+batteryuse(n,c);
             Gtot(n,c)= liveDataSelc(n,c);
             GtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c)*(1/batteryEff)); %Added Losses in Bat Efficiency
@@ -252,6 +257,10 @@ while curCap > endlifeval
 
         if  day==1
             wkbatuse(wkday,c) = batteryuse(n,c);
+            batchargewk(wkday,c) = batcharge(n-1,c);
+            if batteryuse(n,c) < 0
+            daydepwk(wkday,c)=batteryuse(n,c);
+            end
         end
 
         HHcharge(n,c) = (liveDataSelc(n,c))*(DUoSrate+UnitRate);
@@ -265,6 +274,7 @@ while curCap > endlifeval
             triadunit(year,tu)= liveDataDem(n,c);
             tu= tu+1;
         end
+        
 
     end
 
@@ -277,13 +287,14 @@ while curCap > endlifeval
         pbtime = n;
     end
 
+
         if  day==1
             wkday = wkday+1;
         end
 
     if rem((n)/365,1) == 0
-        yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec))');
-        yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec))');
+        yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec))')./100;
+        yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec))')./100;
          % For Triads 
          % TAKES TRIAD Of Previous Year and applies equally over the next year.
         tn(year+1,:)=tn(year,:)+364-dfs; % 364 so always falls on the same day % dfs if needing to adjust
@@ -332,9 +343,24 @@ disp(['Years: ' num2str(n/365)]);
 disp(['Cycles: ' num2str(cycle)]);
 disp(['Run Time: ' num2str(runtime) ' Seconds']);
 
-profile off
+daydeep(n:size(cumSavings,1),:)=[];
+daydepsum=sum(daydep,2);
+batchargebd=batcharge(:,1020);
+DOD=(daydepsum./batchargebd)*100;
+Meanddod=mean(DOD);
 
-profile viewer
+daydepsumwk=sum(daydepwk,2);
+batchargebdwk=batchargewk(:,1020);
+DODwk=(daydepsumwk./batchargebdwk)*100;
+Meanddodwk=mean(DODwk);
+
+disp(['Mean DOD: ',num2str(Meanddod)]);
+disp(['Mean DODwk: ',num2str(Meanddodwk)]);
+
+
+% profile off
+% 
+% profile viewer
 
 
 

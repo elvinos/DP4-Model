@@ -1,10 +1,6 @@
-%% Clear And Close
-clc
-clear all
-close all
- 
+function livedataplotsfunc(livedatause, DataMatmm30, DataMat,sdate)
 %% Variables
-plsct = 1; %Select the number of Plots to Create
+% plsct = 1; %Select the number of Plots to Create
 
 %% Create Data
 % NOTE: USE = kWh
@@ -18,8 +14,8 @@ for n= 0.5:0.5:24
 TimeHH(1,nn)=n;
 end
 
-fileName = 'newCampus.csv';
-[livedatause, DataMatmm30, DataMat,sdate]=liveDatafunc(fileName);
+% % fileName = 'newCampus.csv';
+% [livedatause, DataMatmm30, DataMat,sdate]=liveDatafunc(fileName);
 DataMatDem =DataMatmm30*30*2;
 livedatadem =livedatause*30*2;
 
@@ -191,8 +187,8 @@ xlabel('Time Of Red Period /Hours')
 ylabel('Energy Demand/kW')
 title({'Plot of Red Periods Demand For', 'Different Months in the Year'})
 disp(['Max Power Demand in Red Period: ', num2str(maxredPDem), ' kW']);
-disp(['Max Power Useage in Red Period: ', num2str(maxredPUse), ' kWh']);
 disp(['Mean Power Demand in Red Period: ', num2str(meanredPDem), ' kW']);
+disp(['Max Power Useage in Red Period: ', num2str(maxredPUse), ' kWh']);
 disp(['Mean Power Useage in Red Period: ', num2str(meanredPUse), ' kWh']);
 
 %% Unit Charges Plot
@@ -201,47 +197,23 @@ figure()
 rateR=24.41;
 rateA=0.287;
 rateG=0.161;
-% yyaxis left;
 
-% col = 'g';
-%  h = bar(0, rateG);
-%  set(h, 'FaceColor', col) 
-%  hold on
-% for t=1:48
-%     tt=t/2;
-%     if  tt <= 19 && tt > 17
-%         rate(t) = rateR;
-%         col = 'r';
-%     elseif 8 < tt && tt <= 17 || 19 < tt && tt <= 21.5
-%         rate(t) = rateA;
-%         col = 'y';
-%     else
-%         rate(t) = rateG;
-%         col = 'g';
-%     end
-%  h = bar(TimeHH(t)-0.5, rate(t));
-%  hold on
-%  set(h, 'FaceColor', col) 
-% end
-% set(h,'BarWidth', 1/48)
-
-yyaxis right;
-plot(TimeMM/60,mean(monthdata)*30*2);
+yyaxis left;
+plot(TimeMM/60,mean(wklivedatause)*30*2);
 xlim([0 1440/60]);
-legend(acMonth)
 xlabel('Time Of Day/Hours')
 ylabel('Energy Demand/kW')
-title({'Plot of Energy Demand Averaged For Different Months', 'in the Year (Weekdays Only)'})
-yyaxis left;
+title({'Energy Demand Averaged For All Months', 'Against Unit Rate Costs (Weekdays Only)'})
+yyaxis right;
 g1=7.5;
 a2=17;
 r3=19;
 a4=21.5;
 g5=24;
 cola=[251 250 48] ./ 255;
-colr=colour_peach = [251 111 66] ./ 255;
-colg=[12 195 82] ./ 255;;
-alpha= 0.6;
+colr=[170  0 0] ./ 255;
+colg=[12 195 82] ./ 255;
+alpha= 0.4;
 bar(g1/2,rateG,g1,'FaceColor', colg,'FaceAlpha',alpha);
 hold on
 bar(g1+((a2-g1)/2),rateA,a2-g1,'FaceColor', cola,'FaceAlpha',alpha);
@@ -249,6 +221,6 @@ bar(a2+((r3-a2)/2),rateR,r3-a2,'FaceColor', colr,'FaceAlpha',alpha);
 bar(r3+((a4-r3)/2),rateA,a4-r3,'FaceColor', cola,'FaceAlpha',alpha);
 bar(a4+((g5-a4)/2),rateG,g5-a4,'FaceColor', colg,'FaceAlpha',alpha);
 ylim([0 24]);
+ylabel('Cost per kWh / Pence')
 
-
-
+end

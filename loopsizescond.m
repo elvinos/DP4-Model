@@ -10,9 +10,9 @@ ppFileName = 'Powerpackprice2.csv';
 [maxPower,newCap,UFCost] = powerpackprice(ppFileName);
 
 fileName = 'newCampus1.csv';
+
 samples=size(maxPower,1);
 runlen=25;
-
 ufcost=zeros(1,samples);
 sizeRange=zeros(1,samples);
 pbtime=zeros(1,samples);
@@ -22,14 +22,21 @@ totsaving=zeros(1,samples);
 s= 1;
 
 hh = parfor_progressbar(samples,'Please wait...'); %create the progress bar 
-% hh = waitbar(0,'Please wait...'); Non Paralell
+
 tic
-% for newCap = minSize:step:maxSize
+[livedatause,DataMatmm30,DataMat,sdate] = liveDatafunc(fileName);
+liveDataSelc= livedatause(1:365,:);
+liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
+rowsDataSelec = size(liveDataSelc,1);
+colsDataSelec = size(liveDataSelc,2);
+liveDataSelc1= vertcat(liveDataSelc(2:rowsDataSelec,:),liveDataSelc(2,:),liveDataSelc(3:rowsDataSelec,:),liveDataSelc(2:3,:),liveDataSelc(4:rowsDataSelec,:),liveDataSelc(2:4,:),liveDataSelc(5:rowsDataSelec,:),liveDataSelc(2:5,:),liveDataSelc(6:rowsDataSelec,:),liveDataSelc(2:6,:),liveDataSelc(7:rowsDataSelec,:),liveDataSelc(2:7,:),liveDataSelc);
+  for n=1:ceil(runlen/7)
+      liveDataSelc = vertcat(liveDataSelc,liveDataSelc1);
+  end
+
 parfor s = 1:samples
-[cumSavyear,Year(s),Saving(s),pbtime(s),SavingPY(s,:),DoDmean(s)] = datalivefunc(fileName,UFCost(s), newCap(s), maxPower(s),runlen);
+[cumSavyear,Year(s),Saving(s),pbtime(s),SavingPY(s,:),DoDmean(s)] = datalivecondfunc(liveDataSelc,sdate,UFCost(s), newCap(s), maxPower(s),runlen);
 totsaving(s)= cumSavyear(1,size(cumSavyear,2));
-%waitbar(s/(samples)); % Non Parallel
-% s= s+1; % Non Parallel
 hh.iterate(1); % Parallel
 set( get(findobj(hh,'type','axes'),'title'), 'string',['Sample ', num2str(s), ' of ', num2str(samples) ])
 end
@@ -41,6 +48,10 @@ Rate2=0.07;
 Rate3 = 0.12;
 npf=3;
 close(hh)
+
+set(0,'DefaultFigureWindowStyle','docked')
+livedataplotsfunc(livedatause, DataMatmm30, DataMat,sdate) %%% Plots Graph of Data Selected
+
 toc
 
 warning('off','all') %Turn off Warnings for Polyfit
@@ -60,6 +71,7 @@ for ss= 1:samples
     Labels5{ss}=strcat('P: ', num2str(maxPower(ss,1)));
     Labels6{ss}=strcat('P: ', num2str(maxPower(ss,1)));
     Labels7{ss}=strcat('P: ', num2str(maxPower(ss,1)));
+    Labels8{ss}=strcat('C: ', num2str(sizeRange(ss,1)));
 end 
 
 scatter(sizeRange,totsaving)
@@ -188,15 +200,16 @@ zlabel('Total Saving/ £')
 labelpoints(sizeRange, totsaving,Labels1);
 
 figure()
-scatter3(sizeRange,maxPower,totsaving,'MarkerEdgeColor','k','MarkerFaceColor',[0 .75 .75])
-view(-30,10)
+subplot(1,2,1)
+scatter(sizeRange,DoDmean)
+labelpoints(sizeRange,DoDmean,Labels1);
 xlabel('Battery Size/ kWh')
-ylabel('Max Power/ kW')
-zlabel('Total Saving/ £')
-labelpoints(sizeRange, totsaving,Labels1);
-
-% labelpoints(sizeRange, totsaving,Labels1);
-
+ylabel('Mean Depth of Discharge / %')
+subplot(1,2,2)
+scatter(maxPower,DoDmean)
+xlabel('Max Power/ kW')
+ylabel('Mean Depth of Discharge / %')
+labelpoints(maxPower,DoDmean,Labels8);
 
 
 % profile off
