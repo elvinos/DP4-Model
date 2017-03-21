@@ -1,10 +1,11 @@
 %% Single
 % MAKE SURE YOU RUN LOOPS SIZES BEFORE RUNNING 
-%Sort Size array
+%Sort Size array (range of battery sizes)
+% NPV rate already calucalted
 [sortSR,sortingSRI] = sort(sizeRange,'ascend');
 % creating matching npv array that corresponds with sort size array
 allNPV=horzcat(npv1,npv2,npv3);
-disrate=[0.03,0.07,0.12];
+disrates=[0.03,0.07,0.12];
 fig.SRNPV1=figure();
 
 % srnpvf= zeros(50,1);
@@ -60,35 +61,58 @@ for isr = 1:fitrange:(numel(sortSR)-1)
     iii= iii +1;
     end
 end
+iu=iii-1;
+ if isr2((iu),nselec) ~= numel(sortSR)
+    uu = numel(sortSR);
+    mmpv3(iu)=sortNPV2(uu);
+    srindex(iu) = uu;
+    mSR2(iu)=sortSR(srindex(iu));
+    isr2(iu,nselec)=uu;
+ end
 warning('off','all')
 SPNV(nselec)=subplot(2,2,nselec);
-scatter( sizeRange, NPV,20, maxPower,'filled')
-title({'Net Present Value Based on Battery Size', ['and Power ', num2str(disrate(nselec)*100),'% Discount Rate']})
-xlabel('Battery Size/ kWh')
-ylabel('Net Present Value / £')
-caxis([min(maxPower) max(maxPower)]);
-colormap(jet);
-hold on
+
 x3=linspace(min(mSR2),max(mSR2),numel(mSR2));%% Create equally spaced point to imprive fit
-fitnnPV2 = polyfit(mSR2, mmpv3,5); %% Use Five to give best fit
+fitnnPV2 = polyfit(mSR2, mmpv3,4); %% Use Five to give best fit
 fNn2 = polyval(fitnnPV2,x3);
 mmpv3(:,((iii-1):size(mmpv3,2)))=[];
 mSR2(:,((iii-1):size(mSR2,2)))=[];
 % plot(mSR2,mmpv3) Plot of max points plot line
-plot(x3,fNn2) % Plot of fit line through max points
+plot(x3,fNn2,'linewidth',1.5) % Plot of fit line through max points
+hold on
+scatter( sizeRange, NPV,20, maxPower,'filled')
+plot(linspace(0,max(max(sizeRange)),10), linspace(0,0,10),'--');
+title({'Net Present Value Based on Battery Size', ['and Power ', num2str(disrates(nselec)*100),'% Discount Rate']})
+xlabel('Battery Size/ kWh')
+ylabel('Net Present Value / £')
+ylim([min(NPV),max(NPV)*1.1]);
+caxis([min(maxPower) max(maxPower)]);
+colormap(jet);
+hold on
 
 if nselec > 1
+    if size(srnpvf,2) <  size(mSR2,2) 
+    srnpvf(:,size(mSR2,2)) = 0;
+    mnpvf(:,size(mmpv3,2)) = 0;
+    x3(:,size(xs,2)) = 0;
+    fNn2(:,size(fnpv,2)) = 0;
+%     disp('msr2 big')
+    else 
     mSR2(size(srnpvf,2)) = 0;
     mmpv3(size(mnpvf,2)) = 0;
     x3(size(xs,2)) = 0;
     fNn2(size(fnpv,2)) = 0;
-else
-    
+    end
+    srnpvf= vertcat(srnpvf, mSR2);
+    mnpvf=vertcat(mnpvf,mmpv3);
+    xs=vertcat(xs,x3);
+    fnpv=vertcat(fnpv,fNn2);
+ else
+    srnpvf=mSR2;
+    mnpvf=mmpv3;
+    xs=x3;
+    fnpv=fNn2;
 end
-srnpvf= vertcat(srnpvf, mSR2);
-mnpvf=vertcat(mnpvf,mmpv3);
-xs=vertcat(xs,x3);
-fnpv=vertcat(fnpv,fNn2);
 
 warning('on','all')
 % mSR2T= mSR2';
@@ -99,32 +123,35 @@ end
 
 SBNV(4)=subplot(2,2,4);
 for ff = 1:3
-    idxs(2)=0;
-    idfn(2)=0;
+    idxs=[0,0];
+    idfn=[0,0];
     xs2=xs(ff,:);
-    fnpv2=fnpv(ff,:);
+    fnpv3=fnpv(ff,:);
     
     idxs=find(xs2==0,2,'first');
-    idfn=find(fnpv2==0,2,'first');
+    idfn=find(fnpv3==0,2,'first');
     if numel(idxs) <= 1
-%         idxs(2) = size(xs,2);
+        idxs(2) = size(xs,2);
     else
-        idxs=idxs(end);
-        xs2(:,idxs:size(xs2,2))=[];
     end
-     if numel(idfn) < 1
-%         idfn(2) = size(fnpv,2);
-     else
+    if numel(idfn) < 1
+        idfn(2) = size(fnpv,2);
+    else
+         idxs=idxs(end);
+         xs2(:,idxs:size(xs2,2))=[];
          idfn=idfn(end);
-         fnpv2(:,idfn:size(fnpv2,2))=[];
+         fnpv3(:,idfn:size(fnpv3,2))=[];
     end
-    plot(xs2,fnpv2)
+    plot(xs2,fnpv3)
 hold on
 end
-title({'Net Present Value Fit Battery Based on Size', 'and Power, Differnt Discount Rates'})
+plot(linspace(0,max(max(xs)),10), linspace(0,0,10),'--');
+title({'Net Present Value Fit Battery Based on Size', 'and Power, Different Discount Rates'})
 xlabel('Battery Size/ kWh')
 ylabel('Net Present Value / £')
 legend('3%', '7%', '12%');
+ylim([min(min(fnpv)),max(max(fnpv))*1.1]);
+xlim([0,max(sizeRange)]);
 %set(gcf,'color','w')
 warning('on','all') %Turn on Warnings for Polyfit
 cnpv=colorbar;

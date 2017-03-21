@@ -150,7 +150,7 @@ figure();
 y_data=livedatademcols;
 hrs=8760;
 tmp_x = (0 : hrs/(length(y_data)-1) : hrs);
-plot(tmp_x, sort(y_data, 'descend'), 'LineWidth',2);
+plot(tmp_x, sort(y_data, 'descend'), 'Color',1/255*[148 0 211],'LineWidth',2.5);
 hold on;
 ylabel('Power Demand');
 xlabel('Time/ Hrs');
