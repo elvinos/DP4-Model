@@ -1,10 +1,6 @@
-%% Clear And Close
-clc
-clear
-close all
- 
+function livedataplotsfunc(livedatause, DataMatmm30, DataMat,sdate)
 %% Variables
-plsct = 1; %Select the number of Plots to Create
+% plsct = 1; %Select the number of Plots to Create
 
 %% Create Data
 % NOTE: USE = kWh
@@ -18,9 +14,8 @@ for n= 0.5:0.5:24
 TimeHH(1,nn)=n;
 end
 
-fileName = 'newCampus.csv';
-[livedatause, DataMatmm30, DataMat,sdate]=liveDatafunc(fileName);
-
+% % fileName = 'newCampus.csv';
+% [livedatause, DataMatmm30, DataMat,sdate]=liveDatafunc(fileName);
 DataMatDem =DataMatmm30*30*2;
 livedatadem =livedatause*30*2;
 
@@ -47,21 +42,6 @@ for dd = 1+d:size(livedatause,1)
         wkn = wkn+1;
     else
         wklivedatause(wkday,:)=livedatause(dd,:);
-        wkday = wkday+1;
-    end
-end
-
-strtdate2=strtdate+d;
-wkday =1;
-wkn=1;
-for dd = 1+d:size(DataMat,1)
-    if  rem((dd+1)/7,1) == 0  ||  rem((dd)/7,1) == 0
-    [DayNumber,DayName] = weekday(strtdate+dd);
-%     disp(DayName);
-        wknDataMat(wkn,:)=DataMat(dd,:);
-        wkn = wkn+1;
-    else
-        wkDataMat(wkday,:)=DataMat(dd,:);
         wkday = wkday+1;
     end
 end
@@ -107,41 +87,12 @@ for w = 1:size(livedatause,1)-1
   end
 end
 monthdata(1,:)=(sum(mdata)+monthdata(1,:))/(size(mdata,1)+1);
-
 livedatademcols = livedatadem(:);
-wklivedatademcols=wklivedatause(:)*30*2;
-wknlivedatademcols=wknlivedatause(:)*30*2;
 
 
 
 
 %% Create Plots
-
-set(0,'DefaultFigureWindowStyle','docked') %% Docks all lots in single window
-figure()
-plot(TimeHH(1,:),mean(wknDataMat))
-hold on
-plot(TimeHH(1,:),mean(wkDataMat))
-xlim([0 24]);
-ylabel('Useage/ kWh')
-title({'Averages of Original Useage Data', 'For Senate House, Weekends Vs Weekdays'})
-xlabel('Time / Hours')
-legend('Weekend','Weekdays')
-
-figure()
-  h =  histfit(livedatademcols,100);
-   hold on
-  e = histfit(wklivedatademcols,100);
-  f = histfit(wknlivedatademcols,100);
-    xlim([0 max(wklivedatademcols)]);
-    title({'Plot of Frequency of', 'Energy Demand Over a Year'})
-    xlabel('Demand/kW')
-    ylabel('Frequency')
-set(e(1),'facecolor','r','FaceAlpha',0.9); set(e(2),'color','k')   
-set(f(1),'facecolor','b','FaceAlpha',0.8); set(f(2),'color','y')   
-set(h(1),'facecolor','g'); set(h(2),'color','m')
-
-
 for plsct = 3:3
     figure()
     subplot(2,2,1);
@@ -182,8 +133,6 @@ for plsct = 3:3
     title({'Plot of Frequency of', 'Energy Demand Over a Year'})
     xlabel('Demand/kW')
     ylabel('Frequency')
-    
-    %Title of All Subplots
     text=datestr(strtdate+plsct-1);
     mtit(text,'fontsize',12,'color',[0 0.5 1] ,'xoff',-0.04,'yoff',0.035);
 end
@@ -238,8 +187,8 @@ xlabel('Time Of Red Period /Hours')
 ylabel('Energy Demand/kW')
 title({'Plot of Red Periods Demand For', 'Different Months in the Year'})
 disp(['Max Power Demand in Red Period: ', num2str(maxredPDem), ' kW']);
-disp(['Max Power Useage in Red Period: ', num2str(maxredPUse), ' kWh']);
 disp(['Mean Power Demand in Red Period: ', num2str(meanredPDem), ' kW']);
+disp(['Max Power Useage in Red Period: ', num2str(maxredPUse), ' kWh']);
 disp(['Mean Power Useage in Red Period: ', num2str(meanredPUse), ' kWh']);
 
 %% Unit Charges Plot
@@ -274,6 +223,4 @@ bar(a4+((g5-a4)/2),rateG,g5-a4,'FaceColor', colg,'FaceAlpha',alpha);
 ylim([0 24]);
 ylabel('Cost per kWh / Pence')
 
-
-
-
+end

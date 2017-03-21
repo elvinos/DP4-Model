@@ -1,4 +1,4 @@
-function [cumSavyear,year,Saving,pbtime,SavingPY] = datalivecondfunc(liveDataSelc,sdate,UFCost, newCap, maxPower,runlen)
+function [cumSavyear,year,Saving,pbtime,SavingPY,DoDmean] = datalivecondfunc(liveDataSelc,sdate,UFCost, newCap, maxPower,runlen)
 
 %% Variables
 % set runlen to 0 for running battery until failure
@@ -12,7 +12,7 @@ rateG=0.161;
 
 %% Battery Calculator
 % % liveDataSelc= livedatause(1:365,:);
-liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
+% liveDataSelc(abs(liveDataSelc)<1e-2) = 0;
 rowsDataSelec = size(liveDataSelc,1);
 colsDataSelec = size(liveDataSelc,2);
 % liveDataSelc1= liveDataSelc;
@@ -28,13 +28,11 @@ end
 
 loops= runlen; % Guess Number of years to speed up Process
 
-
   if colsDataSelec == 48
      liveDataDem=liveDataSelc;
   else
      liveDataDem = 2*30*liveDataSelc;
   end
-
 
 % Powerwall Calculation
 % UFCost = 86330;
@@ -83,20 +81,21 @@ chrg = 0;
 pbtime=[];
 
  % Guess Number of years to speed up Process
-batteryuse = zeros(rowsDataSelec*loops,colsDataSelec);
-Rtot = zeros(rowsDataSelec*loops,colsDataSelec);
-Atot = zeros(rowsDataSelec*loops,colsDataSelec);
-Gtot = zeros(rowsDataSelec*loops,colsDataSelec);
-RtotwB = zeros(rowsDataSelec*loops,colsDataSelec);
-AtotwB = zeros(rowsDataSelec*loops,colsDataSelec);
-GtotwB = zeros(rowsDataSelec*loops,colsDataSelec);
-HHcharge = zeros(rowsDataSelec*loops,colsDataSelec);
-HHchargewB = zeros(rowsDataSelec*loops,colsDataSelec);
-overpower =zeros(rowsDataSelec*loops,colsDataSelec);
-Cap=zeros(rowsDataSelec*loops,colsDataSelec);
-wkbatuse=zeros(rowsDataSelec*loops,colsDataSelec);
-batcharge=zeros(rowsDataSelec*loops,colsDataSelec);
-cumSavings=zeros(rowsDataSelec*loops,1);
+batteryuse = zeros(rowsDataSelec,colsDataSelec);
+Rtot = zeros(rowsDataSelec,colsDataSelec);
+Atot = zeros(rowsDataSelec,colsDataSelec);
+Gtot = zeros(rowsDataSelec,colsDataSelec);
+RtotwB = zeros(rowsDataSelec,colsDataSelec);
+AtotwB = zeros(rowsDataSelec,colsDataSelec);
+GtotwB = zeros(rowsDataSelec,colsDataSelec);
+HHcharge = zeros(rowsDataSelec,colsDataSelec);
+HHchargewB = zeros(rowsDataSelec,colsDataSelec);
+overpower =zeros(rowsDataSelec,colsDataSelec);
+Cap=zeros(rowsDataSelec,colsDataSelec);
+wkbatuse=zeros(rowsDataSelec,colsDataSelec);
+batcharge=zeros(rowsDataSelec,colsDataSelec);
+cumSavings=zeros(rowsDataSelec,1);
+batchargewk=zeros(rowsDataSelec,colsDataSelec); %% NEW
 yearchargewB = zeros(1,loops);
 yearcharge = zeros(1,loops);
 SavingPY= zeros(1,loops);
@@ -135,6 +134,8 @@ dfs=0;
 tn=zeros(loops,3);
 triadunit=zeros(loops,3);
 batful=zeros(1,loops);
+daydep=zeros(rowsDataSelec,1);
+daydepwk=zeros(rowsDataSelec,1);
 
 % h = waitbar(0,'Please wait...');
 
@@ -193,7 +194,7 @@ while curCap > endlifeval
             else
                 batteryuse(n,c)= -overpower(n,c);
             end
-
+             daydep(n,c)=batteryuse(n,c); %%% NEW
             dep = dep+batteryuse(n,c);
             Rtot(n,c)= liveDataSelc(n,c);
             RtotwB(n,c)= (liveDataSelc(n,c)+batteryuse(n,c));
@@ -234,9 +235,13 @@ while curCap > endlifeval
              HHchargewB(n,c) = (liveDataSelc(n,c)+batteryuse(n,c))*(DUoSrate+UnitRate);
          end
 
-%         if  day==1
-%             wkbatuse(wkday,c) = batteryuse(n,c);
-%         end
+        if  day==1
+            wkbatuse(wkday,c) = batteryuse(n,c);
+            batchargewk(wkday,c) = Cap(n,c);
+            if batteryuse(n,c) < 0
+            daydepwk(wkday,c)=batteryuse(n,c);
+            end
+        end
 
         HHcharge(n,c) = (liveDataSelc(n,c))*(DUoSrate+UnitRate);
 
@@ -267,8 +272,8 @@ while curCap > endlifeval
         end
 
     if rem((n)/365,1) == 0
-        yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec))')./100;
-        yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec))')./100;
+        yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec)),2)./100;
+        yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec)),2)./100;
          % For Triads
          % TAKES TRIAD Of Previous Year and applies equally over the next year.
         tn(year+1,:)=tn(year,:)+364-dfs; % 364 so always falls on the same day % dfs if needing to adjust
@@ -310,6 +315,14 @@ if isempty(pbtime)
 end
 pbtime = pbtime/365;
 % close(h)
+daydepwk(wkday:size(daydepwk,1),:)=[];
+batchargewk(wkday:size(batchargewk,1),:)=[];
+daydepsumwk=sum(daydepwk,2);
+batchargebdwk=batchargewk(:,1020);
+DODwk=abs((daydepsumwk./batchargebdwk))*100;
+DoDmean=mean(DODwk);
+
+disp(['Mean DoD: ',num2str(DoDmean),'%']);
 disp(['Battery Specifications - P: ', num2str(maxPower), ' C: ', num2str(newCap)]);
 disp(['Total Saved P ' num2str(Saving)]);
 disp(['Payback Period: ' num2str(pbtime) ' Years']);
@@ -317,12 +330,9 @@ disp(['Years: ' num2str(n/365)]);
 disp(['Cycles: ' num2str(cycle)]);
 disp(['Run Time: ' num2str(runtime) ' Seconds']);
 
-
-
-
 % plot((1:365:n-1)/365,cumSavyear);
 % title('Payback Period For Battery')
 % xlabel('Time / Years')
-% ylabel('Cumlative Savings / £)
+% ylabel('Cumlative Savings / ï¿½)
 
 end

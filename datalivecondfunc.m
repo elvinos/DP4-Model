@@ -272,8 +272,8 @@ while curCap > endlifeval
         end
 
     if rem((n)/365,1) == 0
-        yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec))')./100;
-        yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec))')./100;
+        yearchargewB(year) = sum(sum(HHchargewB(n-364:n,1:colsDataSelec)),2)./100;
+        yearcharge(year) = sum(sum(HHcharge(n-364:n,1:colsDataSelec)),2)./100;
          % For Triads
          % TAKES TRIAD Of Previous Year and applies equally over the next year.
         tn(year+1,:)=tn(year,:)+364-dfs; % 364 so always falls on the same day % dfs if needing to adjust
