@@ -1,10 +1,14 @@
-figure()
-x=sizeR2(1:range);
-y=sorttotsaving(1:range);
-scatter(x,y);
-title('Battery Size vs Total Saving (Cond.)')
-xlabel('Battery Size / kWh')
-ylabel('Total Saving/ £')
+% figure()
+% range=30;
+% x=sizeR3(1:range);
+% y=sortpbtime(1:range);
+xpb=sizeRange;
+ypb=pbtime;
 hold on
-[xfit,pfit] = maxFitfunc(x,y);
-plot(xfit,pfit)
+fitrange=4;
+polyn=4;
+mxmin='ascend';
+[xfitpb,pfitpb] = maxFitfunc(xpb,ypb,fitrange,polyn,mxmin);
+plot(xfitpb,pfitpb,'Color', Colnpv(3,:),'linewidth', 1.5) 
+% [xfit,pfit] = maxFitfunc(x,y,fitrange,polyn,mxmin);
+% plot(xfit,pfit)  

@@ -61,7 +61,6 @@ livedataplotsfunc(livedatause, DataMatmm30, DataMat,sdate) %%% Plots Graph of Da
 
 toc
 
-
 warning('off','all') %Turn off Warnings for Polyfit
 sizeRange=double(newCap);
 fittotsaving = polyfit(sizeRange, totsaving,npf);
@@ -115,7 +114,7 @@ disp(['Maximum Savings: ', num2str(maxSave), ' P:' num2str(maxPower(Inms)),  'C:
 disp(['Max Net Present Value 3%: ', num2str(maxNpv1), ' P:' num2str(maxPower(Inmn1)),  'C: ' num2str(newCap(Inmn1))]);
 disp(['Max Net Present Value 7%: ', num2str(maxNpv2), ' P:' num2str(maxPower(Inmn2)),  'C: ' num2str(newCap(Inmn2))]);
 disp(['Max Net Present Value 12%: ', num2str(maxNpv3), ' P:' num2str(maxPower(Inmn3)),  'C: ' num2str(newCap(Inmn3))]);
-range=20;
+range=40;
 if samples < range
     range=samples;
 end
@@ -132,39 +131,183 @@ xstot = linspace(min(sizeR2(1:range)),max(sizeR2(1:range)),numel(sizeR2(1:range)
 xspb = linspace(min(sizeR3(1:range)),max(sizeR3(1:range)),numel(sizeR3(1:range)));
 fstot = polyval(fitsorttotsaving,xstot);
 fspb = polyval(fittotsortpbtime,xspb);
+% for ss=1:range
+%  Labels3{ss}=strcat('P: ', num2str(maxPower2(ss,1)));
+%  Labels4{ss} = strcat('P: ', num2str(maxPower3(ss,1)), ' PB: ', num2str(sortpbtime(ss)));
+% end
+% labelpoints(sizeR2(1:range),sorttotsaving(1:range),Labels3,'NE');
+% hold on
+% plot(xstot,fstot)
 
+
+%%%%%%%% PLOTS FOR CONDNSED GRAPHS %%%%%%%%%%%%%%%%%%%%%%%%%%
+Colcond = linspecer(3) ;
+% Max Plot For Battery Sizes
 fig.SRST2=figure();
-x=sizeR2(1:range);
-y=sorttotsaving(1:range);
-scatter(x,y);
+sp1bs=subplot(2,2,1);
+x1=sizeR2(1:range);
+y1=sorttotsaving(1:range);
+scatter(x1,y1,50, maxPower2(1:range),'filled');
 title('Battery Size vs Total Saving (Cond.)')
 xlabel('Battery Size / kWh')
-ylabel('Total Saving/ £')
+ylabel('Total Savings/ £')
+colormap(sp1bs,viridis); % <- change color reps...
+% ctsc=colorbar;
+% set(ctsc, 'Position', [.43 .11 .015 .8150]) %%% For Subplots
+% set(ctsc, 'Position', [.91 .11 .015 .8150])
+% ylabel(ctsc,'Max Power/ kW')
 hold on
-[xfit,pfit] = maxFitfunc(x,y);
-plot(xfit,pfit)
-%set(gcf,'color','w')
-hold on
-for ss=1:range
- Labels3{ss}=strcat('P: ', num2str(maxPower2(ss,1)));
- Labels4{ss} = strcat('P: ', num2str(maxPower3(ss,1)), ' PB: ', num2str(sortpbtime(ss)));
-end
-labelpoints(sizeR2(1:range),sorttotsaving(1:range),Labels3,'NE');
-hold on
-plot(xstot,fstot)
-export_fig SRST2.eps
+grid on
+fitrange=2;
+polyn=3;
+mxmin='descend';
+[xfit1,pfit1] = maxFitfunc(x1,y1,fitrange,polyn,mxmin);
+fsp1bs=plot(xfit1,pfit1,'Color',Colcond(2,:),'linewidth',1.5);
+legend(fsp1bs,'Max Fit Curve')
 
 
-fig.SRPB2=figure();
-scatter( sizeR3(1:range), sortpbtime(1:range));
-title('Payback Period for Battery Based on Size pkWh (Cond.)')
-xlabel('Battery Size/ kWh')
-ylabel('Payback Time / Years')
-%set(gcf,'color','w')
-labelpoints(sizeR3(1:range), sortpbtime(1:range),Labels4,'NE');
+% export_fig SRST2.eps
+
+% fig.SRPB2=figure();
+sp2bs=subplot(2,2,3);
+
+x2=sizeR3(1:range);
+y2=sortpbtime(1:range);
+scatter(x2,y2,50,maxPower3(1:range),'filled');
+title('Battery Size vs Payback Time (Cond.)')
+xlabel('Battery Size / kWh')
+ylabel('Payback Time/ Years')
+colormap(sp2bs,viridis); % <- change color reps...
+cpbc=colorbar;
+ylabel(cpbc,'Max Power/ kW')
+% set(cpbc, 'Position', [.91 .11 .015 .8150])
+set(cpbc, 'Position', [.06 .11 .012 .8150]) %%% For Subplots
 hold on
-plot(xspb,fspb)
-export_fig SRPB2.eps
+grid on
+fitrange=2;
+polyn=5;
+mxmin='ascend';
+[xfit2,pfit2] = maxFitfunc(x2,y2,fitrange,polyn,mxmin);
+fsb2bs=plot(xfit2,pfit2,'Color',Colcond(3,:),'linewidth',1.5);
+legend(fsb2bs,'Max Fit Curve')
+
+% export_fig SRPB2.eps
+
+% MAX POWER TOP FIT PLOT TOTAL SAVINGS
+% fig.SRST22=figure();
+sp1mp=subplot(2,2,2);
+x3=maxPower2(1:range);
+y3=sorttotsaving(1:range);
+scatter(x3,y3,50, sizeR2(1:range),'filled');
+title('Max Power vs Total Saving (Cond.)')
+xlabel('Max Power/ kW')
+ylabel('Total Savings/ £')
+colormap(sp1mp,inferno); % <- change color reps...
+% ctsc=colorbar;
+% ylabel(ctsc,'Battery Size/ kWh')
+% set(ctsc, 'Position', [.91 .11 .015 .8150])
+hold on
+grid on
+fitrange=2;
+polyn=3;
+mxmin='descend';
+[xfit3,pfit3] = maxFitfunc(x3,y3,fitrange,polyn,mxmin);
+sp1mp=plot(xfit3,pfit3,'Color',Colcond(2,:),'linewidth',1.5)
+legend(fsp1bs,'Max Fit Curve')
+
+% export_fig SRST22.eps
+
+
+% MAX POWER TOP FIT PLOT PAYBACK TIME 
+% fig.SRPB22=figure();
+sp2mp=subplot(2,2,4);
+x4=maxPower3(1:range);
+y4=sortpbtime(1:range);
+scatter(x4,y4,50,sizeR3(1:range),'filled');
+title('Max Power vs Payback Time (Cond.)')
+xlabel('Max Power/ kW')
+ylabel('Payback Time/ Years')
+colormap(sp2mp,inferno); % <- change color reps...
+cpbc2=colorbar;
+ylabel(cpbc2,'Battery Size/ kW')
+set(cpbc2, 'Position', [.925 .11 .015 .8150])
+hold on
+grid on
+fitrange=2;
+polyn=5;
+mxmin='ascend';
+[xfit4,pfit4] = maxFitfunc(x4,y4,fitrange,polyn,mxmin);
+plot(xfit4,pfit4,'Color',Colcond(3,:),'linewidth',1.5) 
+
+% export_fig SRPB22.eps
+
+export_fig SPA2.eps
+
+
+% % BATTERY SIZE TOP FIT PLOTS COMPARE
+% fig.SRPBTS3=figure();
+% yyaxis left
+% plot(xfit1,pfit1,'Color',Colcond(2,:),'linewidth',1.5) %% Total Savings
+% ylabel('Total Savings/ £')
+% hold on 
+% yyaxis right
+% plot(xfit2,pfit2,'Color',Colcond(3,:),'linewidth',1.5)%% Payback Time
+% xlabel('Battery Size / kWh')
+% ylabel('Payback Time/ Years')
+% title('Comparision of Top Batteries based on Size for Payback Time And Total Savings')
+% export_fig SRPBTS3.eps
+% 
+% % MAX POWER TOP FIT PLOTS COMPARE
+% fig.SRPBTS4=figure();
+% yyaxis left
+% plot(xfit3,pfit3,'Color',Colcond(2,:),'linewidth',1.5) %% Total Savings
+% ylabel('Total Savings/ £')
+% hold on 
+% yyaxis right
+% plot(xfit4,pfit4,'Color',Colcond(3,:),'linewidth',1.5)%% Payback Time
+% xlabel('Max Power / kW')
+% ylabel('Payback Time/ Years')
+% title('Comparision of Top Batteries based on Max Power for Payback Time And Total Savings')
+% export_fig SRPBTS4.eps
+
+%%%%%% AS SUBPLOTS
+% BATTERY SIZE TOP FIT PLOTS COMPARE
+fig.SRTSPB5=figure();
+BSSP=subplot(1,2,1);
+yyaxis left
+plot(xfit1,pfit1,'linewidth',2) %% Total Savings
+ylabel('Total Savings/ £')
+hold on 
+grid on
+yyaxis right
+plot(xfit2,pfit2,'linewidth',2)%% Payback Time
+set(BSSP, 'Position', [0.06 0.11 0.4 0.8])
+xlabel('Battery Size / kWh')
+ylabel('Payback Time/ Years')
+title({'Comparision of Top Batteries based on', 'Size for Payback Time And Total Savings'})
+% MAX POWER TOP FIT PLOTS COMPARE
+MPSP = subplot(1,2,2);
+yyaxis left
+plot(xfit3,pfit3,'linewidth',2) %% Total Savings
+ylabel('Total Savings/ £')
+hold on 
+grid on
+yyaxis right
+plot(xfit4,pfit4,'linewidth',2)%% Payback Time
+set(MPSP, 'Position', [0.55 0.11 0.4 0.8])
+xlabel('Max Power / kW')
+ylabel('Payback Time/ Years')
+title({'Comparision of Top Batteries based on', 'Max Power for Payback Time And Total Savings'})
+export_fig SRTSPB5.eps
+
+% scatter( sizeR3(1:range), sortpbtime(1:range));
+% title('Payback Period for Battery Based on Size pkWh (Cond.)')
+% xlabel('Battery Size/ kWh')
+% ylabel('Payback Time / Years')
+% labelpoints(sizeR3(1:range), sortpbtime(1:range),Labels4,'NE');
+% hold on
+% plot(xspb,fspb)
+
 
 %% NPV FIT
 
@@ -224,12 +367,13 @@ for isr = 1:fitrange:(numel(sortSR))
     iii= iii +1;
     end
 end
- if isr2((iii-1),nselec) ~= numel(sortSR)
+iu=iii-1;
+ if isr2((iu)) ~= numel(sortSR)
     uu = numel(sortSR);
-    mmpv3(iii)=sortNPV2(uu);
-    srindex(iii) = uu;
-    mSR2(iii)=sortSR(srindex(iii));
-    isr2(iii,nselec)=uu;
+    mmpv3(iu)=sortNPV2(uu);
+    srindex(iu) = uu;
+    mSR2(iu)=sortSR(srindex(iu));
+    isr2(iu)=uu;
  end
     
 warning('off','all')
@@ -250,7 +394,7 @@ xlabel('Battery Size/ kWh')
 ylabel('Net Present Value / £')
 ylim([min(NPV),max(NPV)*1.1]);
 caxis([min(maxPower) max(maxPower)]);
-colormap(jet);
+colormap(viridis);
 
 
 if nselec > 1
@@ -278,8 +422,12 @@ end
 
 
 end
+set(SPNV(1), 'Position', [0.06 0.57 0.4 0.36])
+set(SPNV(2), 'Position', [0.51 0.57 0.4 0.36])
+set(SPNV(3), 'Position', [0.06 0.07 0.4 0.36])
+set(SPNV(4), 'Position', [0.51 0.07 0.4 0.36])
 
-SBNV(4)=subplot(2,2,4);
+SPNV(4)=subplot(2,2,4);
 for ff = 1:3 %% Plot all fit lines on final subplot
     idxs=[0,0];
     idfn=[0,0];
@@ -315,6 +463,10 @@ cnpv=colorbar;
 caxis([min(maxPower) max(maxPower)]); 
 set(cnpv, 'Position', [.93 .11 .015 .8150])
 ylabel(cnpv,'Max Power/ kW')
+set(SPNV(1), 'Position', [0.06 0.57 0.4 0.36])
+set(SPNV(2), 'Position', [0.51 0.57 0.4 0.36])
+set(SPNV(3), 'Position', [0.06 0.07 0.4 0.36])
+set(SPNV(4), 'Position', [0.51 0.07 0.4 0.36])
 
 export_fig SRNPV1.eps
 
@@ -329,64 +481,104 @@ export_fig SRNPV1.eps
 % export_fig SRMPTS1.eps
 
 fig.DOD1=figure();
-subplot(1,2,1)
-scatter(sizeRange,DoDmean,90, maxPower,'filled')
-set(gcf,'color','w')
+dodsp1=subplot(1,2,1);
+scatter(sizeRange,DoDmean,65, maxPower,'filled')
 % labelpoints(sizeRange,DoDmean,Labels1);
+title('Mean Depth of Discharge vs Battery Size')
 xlabel('Battery Size/ kWh')
 ylabel('Mean Depth of Discharge / %')
 caxis([min(maxPower) max(maxPower)]); 
-colormap(jet); % <- change color reps...
-colorbar;
-subplot(1,2,2)
-scatter(maxPower,DoDmean,90, sizeRange,'filled')
+colormap(dodsp1,viridis); % <- change color reps...
+dodcb1=colorbar;
+set(dodcb1, 'Position', [.43 .11 .015 .8150])
+set(dodsp1, 'Position', [0.06 0.11 0.35 0.8])
+grid on
+ylabel(dodcb1,'Max Power/ kW')
+dodsp2=subplot(1,2,2);
+scatter(maxPower,DoDmean,65, sizeRange,'filled')
+title('Mean Depth of Discharge vs Max Power')
 xlabel('Max Power/ kW')
 ylabel('Mean Depth of Discharge / %')
 % labelpoints(maxPower,DoDmean,Labels8);
 caxis([min(sizeRange) max(sizeRange)]); 
-colormap(jet); % <- change color reps...
-colorbar;
+colormap(dodsp2,inferno); % <- change color reps...
+dodcb2=colorbar;
+grid on
+set(dodcb2, 'Position', [.90 .11 .015 .8150])
+set(dodsp2, 'Position', [0.54 0.11 0.35 0.8])
+ylabel(dodcb2,'Battery Size/ kWh')
 export_fig DOD1.eps
 
 % Plot of Colormap For Max Power
 fig.SRTS2=figure();
-scatter(sizeRange,totsaving,90, maxPower,'filled')
+xsr=sizeRange;
+ysr=totsaving;
+scatter(xsr,ysr,90, maxPower,'filled')
 caxis([min(maxPower) max(maxPower)]); 
-colormap(jet); % <- change color reps...
-colorbar;
+colormap(viridis); % <- change color reps...
+ctsb=colorbar;
+grid on 
 title('Battery Size vs Total Saving')
 xlabel('Battery Size / kWh')
 ylabel('Total Saving')
-ylabel(colorbar,'Max Power/ kW')
+ylabel(ctsb,'Max Power/ kW')
+hold on
+fitrange=4;
+polyn=4;
+mxmin='descend';
+[xfitsr,pfitsr] = maxFitfunc(xsr,ysr,fitrange,polyn,mxmin);
+fsr1=plot(xfitsr,pfitsr,'Color', Colnpv(2,:),'linewidth', 1.5);
+legend(fsr1,'Max Fit Curve')
 %set(gcf,'color','w')
 export_fig SRTS2.eps
 
 fig.MPTS2=figure();
-scatter(maxPower,totsaving,90, sizeRange,'filled')
+xpm = maxPower;
+ypm =totsaving;
+scatter(xpm,ypm,80, sizeRange,'filled')
 caxis([min(sizeRange) max(sizeRange)]); 
-colormap(jet); % <- change color reps...
-colorbar;
+colormap(inferno); % <- change color reps...
+ctsb2=colorbar;
+grid on
 title('Max Power vs Total Savings')
 xlabel('Max Power / kW')
 ylabel('Total Saving /£')
-ylabel(colorbar,' Battery Size/ kWh')
+ylabel(ctsb2,' Battery Size/ kWh')
+hold on
+fitrange=4;
+polyn=4;
+mxmin='descend';
+[xfitmp,pfitmp] = maxFitfunc(xpm,ypm,fitrange,polyn,mxmin);
+fmp1=plot(xfitmp,pfitmp,'Color', Colnpv(3,:),'linewidth', 1.5) ;
+legend(fmp1,'Max Fit Curve')
 %set(gcf,'color','w')
 
 fig.SRPB2=figure();
-scatter(sizeRange,pbtime,90,maxPower,'filled')
+xpb=sizeRange;
+ypb=pbtime;
+scatter(xpb,ypb,80,maxPower,'filled')
 caxis([min(maxPower) max(maxPower)]); 
-colormap(jet); % <- change color reps...
-colorbar;
+colormap(viridis); % <- change color reps...
+ctsb3=colorbar;
+grid on
 title('Battery Size vs Payback Time')
 xlabel('Battery Size / kWh')
 ylabel('Payback Time/ Years')
-ylabel(colorbar,'Max Power/ kW')
+ylabel(ctsb3,'Max Power/ kW')
+hold on
+fitrange=4;
+polyn=4;
+mxmin='ascend';
+[xfitpb,pfitpb] = maxFitfunc(xpb,ypb,fitrange,polyn,mxmin);
+fpb1=plot(xfitpb,pfitpb,'Color', Colnpv(3,:),'linewidth', 1.5);
+legend(fpb1,'Max Fit Curve')
+
 %set(gcf,'color','w')
 export_fig SRPB2.eps
 
 fig.SRMPTS2=figure();
-scatter3(sizeRange,maxPower,totsaving,90, pbtime,'filled')
-colormap(jet); % <- change color reps...
+scatter3(sizeRange,maxPower,totsaving,80, pbtime,'filled')
+colormap(magma); % <- change color reps...
 cm3=colorbar;
 caxis([min(pbtime) max(pbtime)]); 
 set(cm3, 'Position', [.948 .11 .015 .8150])
@@ -398,11 +590,7 @@ zlabel('Total Saving/ £')
 ylabel(cm3,'Pay Back Time/ Years')
 export_fig SRMPTS2.eps
 
-warning('on','all') %Turn on Warnings for Polyfit
-%set(gcf,'color','w')
-
-
-% % export_fig ( ../Img/.eps);
+warning('on','all') %Turn on Warnings for Polyfitc
 
 % profile off
 %

@@ -1,4 +1,4 @@
-function [x3,fNn2] = maxFitfunc(x,y)
+function [x3,fNn2] = maxFitfunc(x,y,fitrange,polyn,mxmin)
  
 % Single 
 % 
@@ -11,15 +11,16 @@ sortNPV2=y(sortingSRI); % creating matching npv array that corresponds with sort
 
 
 iii=1;
-fitrange=2;
+% fitrange=2;
 npvsizefit=ceil(numel(sortSR)/fitrange);
 mSR2=zeros(1,npvsizefit);
 srm3index=zeros(1,npvsizefit);
 mmpv3=zeros(1,npvsizefit);
 srindex=zeros(1,npvsizefit);
 
+
 % Find Max values to increase points in this region
-[sortNPV,sortingNPVI] = sort(sortNPV2,'descend');
+[sortNPV,sortingNPVI] = sort(sortNPV2,mxmin);
 maxNPV=sortNPV(1:10);
 maxNPVI=sortingNPVI(1:10);
 
@@ -31,9 +32,9 @@ iii= iii +1;
 
 for isr = 1:fitrange:(numel(sortSR))
  u =isr+fitrange-1;
-%     if u > numel(sortSR) %% make sure that region does not exceed size of matrix
-%         u = numel(sortSR);
-%     end
+    if u > numel(sortSR) %% make sure that region does not exceed size of matrix
+        u = numel(sortSR);
+    end
     if any(isr==maxNPVI)|| any(isr==(maxNPVI+1))|| any(isr==(maxNPVI+2)) || any(isr==(maxNPVI+3)) || any(isr==(maxNPVI+4)) %% Check to catch max values
         for uu = isr:(isr+fitrange-1) %% Run through range to find max values
             if any(uu==maxNPVI) %% add max valyes to array
@@ -49,7 +50,11 @@ for isr = 1:fitrange:(numel(sortSR))
 
     else
     isr2(iii)=isr; %% if not a max value find:
+    if isequal(mxmin,'descend')
     [mmpv3(iii),srm3index(iii)]=max(sortNPV2(isr:u));% max value in range
+    else
+    [mmpv3(iii),srm3index(iii)]=min(sortNPV2(isr:u));% max value in range
+    end
     srindex(iii) = (srm3index(iii)-1+isr); %% Find corresponding size index
     mSR2(iii)=sortSR(srindex(iii)); %% create corresponding size
     iii= iii +1;
@@ -73,10 +78,10 @@ iu=iii-1;
 % hold on
 
 x3=linspace(min(mSR2),max(mSR2),numel(mSR2));%% Create equally spaced point to improve fit
-fitnnPV2 = polyfit(mSR2, mmpv3,3); %% Use Five to give best fit
+fitnnPV2 = polyfit(mSR2, mmpv3,polyn); %% Use Five to give best fit
 fNn2 = polyval(fitnnPV2,x3);
 
 % plot(mSR2,mmpv3)
-plot(x3,fNn2)
+% plot(x3,fNn2)
 
 end
