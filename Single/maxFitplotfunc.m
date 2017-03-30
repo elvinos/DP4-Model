@@ -6,7 +6,7 @@ y=totsaving;
 fitrange=4;
 polyn=4;
 
-[sortSR,sortingSRI] = sort(x,'ascend');
+[sortSR,sortingSRI] = sort(x,'descend');
 sortNPV2=y(sortingSRI);
 % creating matching npv array that corresponds with sort size array
 

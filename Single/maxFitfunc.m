@@ -38,7 +38,7 @@ for isr = 1:fitrange:(numel(sortSR))
     if any(isr==maxNPVI)|| any(isr==(maxNPVI+1))|| any(isr==(maxNPVI+2)) || any(isr==(maxNPVI+3)) || any(isr==(maxNPVI+4)) %% Check to catch max values
         for uu = isr:(isr+fitrange-1) %% Run through range to find max values
             if any(uu==maxNPVI) %% add max valyes to array
-                for n= 1:3 %% REPLICATE TO create a closer fit at the max values
+                for n= 1:5 %% REPLICATE TO create a closer fit at the max values
                 mmpv3(iii)=sortNPV2(uu);
                 srindex(iii) = uu;
                 mSR2(iii)=sortSR(srindex(iii));

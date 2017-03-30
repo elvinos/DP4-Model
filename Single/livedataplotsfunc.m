@@ -93,9 +93,12 @@ livedatademcols = livedatadem(:);
 
 
 %% Create Plots
+set(0,'DefaultAxesFontSize', 16)
+set(0,'DefaultTextFontSize', 18)
+
 for plsct = 3:3
     figure()
-    subplot(2,2,1);
+    pl1=subplot(2,2,1);
 %     title(sp,datestr(strtdate+plsct-1))
     yyaxis left;
     plot(TimeHH(1,:)*60,DataMat(plsct,:))
@@ -108,25 +111,27 @@ for plsct = 3:3
     plot(TimeMM(1,:),DataMatDem(plsct,:));
     ylabel('Demand/ kW')
     
-    subplot(2,2,2);
+    pl2=subplot(2,2,2);
     plot(TimeMM(1,:),livedatause(plsct,:))
     ylabel('Useage/kWh')
+    ylim([min(min(livedatause(plsct,:))),max(max(livedatause(plsct,:)))]);
     hold on
     xlim([0 1440]);
     plot(TimeMM(1,:),DataMatmm30(plsct,:));
     title({'Date: Plot of Live Use Fit', 'Against Minute Resoultion'})
     xlabel('Time / Minutes')
 
-    subplot(2,2,3);
-    plot(TimeMM(1,:),DataMatDem(plsct,:));
-    xlim([0 1440]);
-    hold on
+    pl3=subplot(2,2,3);
     plot(TimeMM(1,:),livedatadem(plsct,:),'g');
+    xlim([0 1440]);
+    ylim([min(min(livedatadem(plsct,:))),max(max(livedatadem(plsct,:)))]);
+    hold on
+    plot(TimeMM(1,:),DataMatDem(plsct,:));
     title({'Date: Plot of Live Demand Fit', 'Against Minute Resoultion'})
     xlabel('Time / Minutes')
     ylabel('Demand/kW')
     
-    subplot(2,2,4)
+    pl4=subplot(2,2,4);
     
     histfit(livedatademcols,100)
     xlim([0 max(livedatademcols)]);
@@ -135,8 +140,9 @@ for plsct = 3:3
     ylabel('Frequency')
     text=datestr(strtdate+plsct-1);
     mtit(text,'fontsize',12,'color',[0 0.5 1] ,'xoff',-0.04,'yoff',0.035);
+    
 end
-  
+  export_fig 3dayplot.eps
 %% Validate Code 
     datasum = sum(DataMat(2,:));
 %     datammsum = sum(DataMatmm30(2,:))
@@ -155,7 +161,8 @@ hold on;
 ylabel('Power Demand');
 xlabel('Time/ Hrs');
 title('Load Duaration Curve');
-grid;
+grid on;
+export_fig loadprofile.eps
 
 figure()
 % subplot(2,1,1)
@@ -171,29 +178,82 @@ legend(acMonth)
 xlabel('Time Of Day/Hours')
 ylabel('Energy Demand/kW')
 title({'Plot of Energy Demand Averaged For Different Months', 'in the Year (Weekdays Only)'})
+export_fig monthdemand.eps
+
 
 %% Red Rate Plots
 wklivedatausered=wklivedatause(:,1020:1140);
 figure()
-maxredPDem=max(max(wklivedatausered*30*2));
-maxredPUse=max(sum(wklivedatausered,2));
-meanredPDem=mean(mean(wklivedatausered*30*2));
-meanredPUse=mean(sum(wklivedatausered,2));
 mnlivedatausered=monthdata(:,1020:1140);
-plot((1020:1140)/60,mnlivedatausered*30*2);
+mnlivedatademred= mnlivedatausered*30*2;
+
+dlivedatausered=wklivedatause(:,1020:1140);
+dlivedatademred= dlivedatausered*30*2;
+
+maxredPDem=max(max(dlivedatademred));
+maxredPUse=max(sum(dlivedatausered,2));
+meanredPDem=mean(mean(dlivedatademred));
+meanredPUse=mean(sum(dlivedatausered,2));
+
+% maxredPDem=max(max(mnlivedatademred));
+% maxredPUse=max(sum(mnlivedatausered,2));
+% meanredPDem=mean(mean(mnlivedatademred));
+% meanredPUse=mean(sum(mnlivedatausered,2));
+
+plot((1020:1140)/60,mnlivedatademred);
 xlim([1020/60 1140/60]);
 legend(acMonth)
 xlabel('Time Of Red Period /Hours')
-ylabel('Energy Demand/kW')
+ylabel('Energy Usage/kW')
 title({'Plot of Red Periods Demand For', 'Different Months in the Year'})
+export_fig redrate.eps
 disp(['Max Power Demand in Red Period: ', num2str(maxredPDem), ' kW']);
 disp(['Mean Power Demand in Red Period: ', num2str(meanredPDem), ' kW']);
 disp(['Max Power Useage in Red Period: ', num2str(maxredPUse), ' kWh']);
 disp(['Mean Power Useage in Red Period: ', num2str(meanredPUse), ' kWh']);
 
+%% Red Rate Load
+% figure();
+dlivedatademredcols = dlivedatademred(:);
+y_data=dlivedatademredcols;
+% hrs=2*365;
+% tmp_x = (0 : hrs/(length(y_data)-1) : hrs);
+% plot(tmp_x, sort(y_data, 'descend'), 'Color',1/255*[148 0 211],'LineWidth',4);
+% hold on;
+% xlim([0,hrs])
+% ylabel('Power Demand / kW');
+% xlabel('Time/ Hrs');
+% title('Load Duaration Curve For Red Rate Demand Over a Year');
+% grid on;
+% export_fig redload1.eps
+
+%% Histogram
+figure()
+dailyreduse=sum(dlivedatausered,2);
+histfit(dailyreduse,50)
+xlim([min(dailyreduse) max(dailyreduse)]);
+
+title({'Plot of Frequecy of Total Daily Red Rate Usage A Over a Year'})
+xlabel('Usage/kWh')
+ylabel('Frequency')
+export_fig histred1.eps
+%% Red Rate Load
+figure();
+% y_data=mnlivedatademredcols;
+perc=100;
+tmp_x = (0 : perc/(length(y_data)-1) : perc);
+plot(tmp_x, sort(y_data, 'descend'), 'Color',1/255*[140 58 69],'LineWidth',3);
+hold on;
+xlim([0,perc])
+ylabel('Power Demand / kW');
+xlabel('Time Spent at Load Over A Year / %');
+title('Load Duaration Curve For Red Rate Demand Over a Year');
+grid on;
+export_fig redload1.eps
+
 %% Unit Charges Plot
 
-figure()
+unitplot=figure();
 rateR=24.41;
 rateA=0.287;
 rateG=0.161;
@@ -202,7 +262,7 @@ yyaxis left;
 plot(TimeMM/60,mean(wklivedatause)*30*2);
 xlim([0 1440/60]);
 xlabel('Time Of Day/Hours')
-ylabel('Energy Demand/kW')
+ylabel('Energy Usage/kWh')
 title({'Energy Demand Averaged For All Months', 'Against Unit Rate Costs (Weekdays Only)'})
 yyaxis right;
 g1=7.5;
@@ -222,5 +282,6 @@ bar(r3+((a4-r3)/2),rateA,a4-r3,'FaceColor', cola,'FaceAlpha',alpha);
 bar(a4+((g5-a4)/2),rateG,g5-a4,'FaceColor', colg,'FaceAlpha',alpha);
 ylim([0 24]);
 ylabel('Cost per kWh / Pence')
+% export_fig unitplot.eps
 
 end
